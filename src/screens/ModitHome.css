@@ -1,0 +1,32 @@
+.modit-home { min-height: 100vh; background: var(--color-bg); color: var(--color-text-primary); font-family: 'Noto Sans KR', sans-serif; }
+.modit-home__main { max-width: 1440px; margin: 0 auto; padding: 32px 80px 72px; }
+.modit-home__breadcrumb { color: var(--color-text-secondary); font-size: 12px; font-weight: 500; margin-bottom: 20px; }
+.modit-home__breadcrumb span { padding: 0 6px; }
+.modit-home__intro { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 16px; padding: 40px 48px; }
+.modit-home__eyebrow, .modit-home__section-label { color: var(--color-brand); font-size: 12px; font-weight: 700; }
+.modit-home__intro h1 { font-size: 36px; letter-spacing: -.6px; line-height: 1.4; margin: 12px 0 16px; }
+.modit-home__intro p { color: var(--color-text-secondary); font-size: 15px; line-height: 1.7; margin: 0; max-width: 700px; }
+.modit-home__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.modit-home__project, .modit-home__progress { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 12px; margin-top: 24px; padding: 32px; }
+.modit-home__project { align-items: center; display: flex; justify-content: space-between; gap: 24px; }
+.modit-home__project h2, .modit-home__section-head h2 { font-size: 22px; line-height: 1.45; margin: 8px 0; }
+.modit-home__project p { color: var(--color-text-secondary); font-size: 14px; margin: 0; }
+.modit-home__deadline { background: var(--color-error-bg); border-radius: 12px; display: flex; flex: 0 0 auto; flex-direction: column; gap: 4px; min-width: 190px; padding: 16px 20px; }
+.modit-home__deadline span, .modit-home__deadline small { color: var(--color-error); font-size: 12px; }
+.modit-home__deadline strong { color: var(--color-text-primary); font-size: 18px; }
+.modit-home__section-head { align-items: center; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.modit-home__count { color: var(--color-text-secondary); font-size: 14px; margin: 8px 0 20px; }
+.modit-home__documents { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.modit-home__document { align-items: flex-start; border: 1px solid var(--color-border); border-radius: 12px; display: flex; gap: 12px; min-width: 0; padding: 20px; }
+.modit-home__file-icon { color: var(--color-brand); flex: 0 0 32px; padding-top: 2px; }
+.modit-home__document > div { flex: 1; min-width: 0; }
+.modit-home__document h3 { font-size: 14px; margin: 0 0 8px; }
+.modit-home__document p { color: var(--color-text-secondary); font-size: 12px; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modit-home__document-status { border-radius: 999px; flex: 0 0 auto; font-size: 11px; font-weight: 600; padding: 5px 8px; }
+.modit-home__document-status.is-pending, .modit-home__document-status.is-checking { background: var(--color-surface-muted); color: var(--color-text-secondary); }
+.modit-home__document-status.is-pass { background: var(--color-lime); color: var(--color-text-primary); }
+.modit-home__document-status.is-error { background: var(--color-error-bg); color: var(--color-error); }
+.modit-home__document-status.is-review { background: var(--color-lavender); color: var(--color-brand); }
+.modit-home__note { color: var(--color-text-secondary); font-size: 12px; line-height: 1.6; margin: 20px 0 0; }
+@media (max-width: 1000px) { .modit-home__main { padding: 32px 24px 56px; } .modit-home__documents { grid-template-columns: 1fr; } }
+@media (max-width: 650px) { .modit-home__main { padding: 24px 16px 40px; } .modit-home__intro { padding: 28px 24px; } .modit-home__intro h1 { font-size: 28px; } .modit-home__actions { flex-direction: column; } .modit-home__actions .button { width: 100%; } .modit-home__project { align-items: stretch; flex-direction: column; } .modit-home__project, .modit-home__progress { padding: 24px; } .modit-home__deadline { min-width: 0; } .modit-home__document { flex-wrap: wrap; } }
