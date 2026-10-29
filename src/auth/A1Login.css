@@ -26,6 +26,8 @@
 .a1-input input { background: none; border: 0; color: var(--color-text-primary); flex: 1; font-size: 14px; min-width: 0; outline: none; }
 .a1-input input::placeholder { color: var(--color-text-secondary); }
 .a1-input svg { flex: 0 0 18px; height: 18px; width: 18px; }
+.a1-input.is-error { border-color: var(--color-error); }
+.a1-field-error { color: var(--color-error); font-size: 12px; font-weight: 500; }
 .a1-options { align-items: center; display: flex; justify-content: space-between; }
 .a1-keep { align-items: center; color: var(--color-text-secondary); display: inline-flex; font-size: 12px; font-weight: 500; gap: 8px; }
 .a1-keep input { accent-color: var(--color-brand); height: 18px; margin: 0; width: 18px; }
@@ -40,6 +42,9 @@
 .a1-demo__divider::before, .a1-demo__divider::after { background: var(--color-border); content: ''; flex: 1; height: 1px; }
 .a1-demo-button { align-items: center; border: 1px solid transparent; border-radius: var(--radius-button); display: flex; gap: 14px; min-height: 72px; padding: 14px 18px; text-align: left; transition: transform .15s ease, background .15s ease; width: 100%; }
 .a1-demo-button:hover { transform: translateY(-1px); }
+.a1-demo-button:disabled { cursor: wait; opacity: .6; transform: none; }
+.a1-demo__row { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+@media (max-width: 480px) { .a1-demo__row { grid-template-columns: 1fr; } }
 .a1-demo-button:focus-visible, .a1-solo-link:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
 .a1-demo-button > svg { flex: 0 0 20px; height: 20px; width: 20px; }
 .a1-demo-button--applicant { background: var(--color-brand); color: #fff; }

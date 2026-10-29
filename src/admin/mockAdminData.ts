@@ -1,4 +1,5 @@
 // Mock data for the admin (담당자) screens. These are not server data.
+// Screens read applicant data through src/api/adminApi.ts, which seeds itself from this file.
 import type { Status } from '../components/common'
 
 export type AdminStatus = 'DRAFT' | 'SUBMITTED' | 'SUBMITTED_INCOMPLETE' | 'NEEDS_REVISION' | 'REVIEW_PENDING' | 'APPROVED'
@@ -12,12 +13,14 @@ export type AdminApplicant = {
   lastSubmittedAt: string | null
 }
 
-export type AdminEventKind = 'link' | 'ai' | 'submit' | 'revision' | 'resubmit' | 'approved'
-export type AdminEvent = { kind: AdminEventKind; at: string; label: string; tone: 'muted' | 'error' | 'navy' | 'brand'; comment?: string }
+export type AdminEventKind = 'link' | 'ai' | 'submit' | 'revision' | 'resubmit' | 'approved' | 'approval-cancelled'
+// attachAi: whether a 보완 요청 was sent together with the AI 검사 결과.
+export type AdminEvent = { kind: AdminEventKind; at: string; label: string; tone: 'muted' | 'error' | 'navy' | 'brand'; comment?: string; attachAi?: boolean }
 
 export const adminProject = {
   name: '2026 창업동아리 지원사업 정산',
   linkSharedAt: '2026-10-24T09:10',
+  zipFileName: '2026_창업동아리_정산.zip',
 } as const
 
 export const adminStatusOrder: AdminStatus[] = ['DRAFT', 'SUBMITTED', 'SUBMITTED_INCOMPLETE', 'NEEDS_REVISION', 'REVIEW_PENDING', 'APPROVED']
@@ -89,6 +92,52 @@ export const mockApplicants: AdminApplicant[] = rows.map(([name, studentId, stat
 }))
 
 export const clubNames: Record<string, string> = Object.fromEntries(rows.map((row, index) => [toId(index), row[6]]))
+
+// D1 담당자 홈 only: the two other 진행 중 프로젝트 from the design. They have no screens, so their counts are fixed.
+export type OtherProject = { name: string; org: string; total: number; submitted: number; pending: number; revision: number; approved: number; deadlineAt: string }
+export const otherProjects: OtherProject[] = [
+  { name: '교내 연구 활동비 정산', org: '연구처', total: 15, submitted: 8, pending: 3, revision: 0, approved: 5, deadlineAt: '2026-11-05T23:59:59+09:00' },
+  { name: '해외봉사 활동 계획서', org: '국제교류처', total: 20, submitted: 5, pending: 0, revision: 0, approved: 5, deadlineAt: '2026-11-10T23:59:59+09:00' },
+]
+export const adminProjectOrg = '창업지원단'
+// 검토 대기 on D1: submitted and waiting for the 담당자 (보완 필요 and 승인 are counted separately).
+export const pendingStatuses: AdminStatus[] = ['SUBMITTED', 'SUBMITTED_INCOMPLETE', 'REVIEW_PENDING']
+
+// 새 프로젝트 만들기 (D2 신청자 명단). The design's CSV: 32 rows, 30 usable and 2 to fix (이메일 형식 오류, 학번 중복).
+export type RosterRow = { id: string; name: string; studentId: string; email: string }
+const designRoster: [name: string, studentId: string, email: string][] = [
+  ['김청년', '20231234', 'kim.cy@hankuk.ac.kr'],
+  ['이서연', '20221045', 'seoyeon.lee@hankuk.ac.kr'],
+  ['정민호', '20231187', 'minho.j@hankuk.ac.kr'],
+  ['박서준', '20221190', 'parksj@hankuk'],
+  ['최유진', '20221302', 'yujin.choi@hankuk.ac.kr'],
+  ['한도윤', '20231456', 'doyun.han@hankuk.ac.kr'],
+  ['오지민', '20221578', 'jimin.oh@hankuk.ac.kr'],
+  ['이도현', '20231234', 'dohyun.lee@hankuk.ac.kr'],
+  ['윤하늘', '20231602', 'haneul.y@hankuk.ac.kr'],
+  ['강민재', '20221699', 'minjae.kang@hankuk.ac.kr'],
+]
+const usedNames = new Set(designRoster.map(([name]) => name))
+export const exampleRoster: RosterRow[] = [
+  ...designRoster,
+  ...rows.filter(([name]) => !usedNames.has(name)).map(([name, studentId]): [string, string, string] => [name, studentId, `${studentId}@hankuk.ac.kr`]),
+].map(([name, studentId, email], index) => ({ id: toId(index), name, studentId, email }))
+export const rosterCsvHeader = ['대상자 ID', '이름', '학번', '이메일'] as const
+export const rosterTemplateFileName = '명단_양식.csv'
+/** 이전 프로젝트 명단 불러오기: the 2026 창업동아리 명단 without the two rows to fix. */
+export const previousRosters = [{ label: `${adminProject.name} · 30명`, rows: exampleRoster.filter((row) => row.name !== '박서준' && row.name !== '이도현') }]
+export const defaultNewDocuments = ['사업계획서', '물품매매계약서', '영수증 첨부철']
+// Shown in the D3 공고문 칸 placeholder and used by [예시 공고문 넣기].
+export const exampleGuide = `[2026 창업동아리 지원사업 정산 안내]
+사업 기간: 2026.09.01 ~ 10.31
+제출 서류: 사업계획서, 물품매매계약서, 영수증 첨부철
+- 사업계획서에는 팀장 서명이 있어야 합니다.
+- 물품매매계약서는 매수인·매도인 양측 서명·날인이 모두 있어야 합니다.
+- 영수증은 사업 기간(09.01~10.31) 내 발행분만 인정합니다.
+- 계약 금액과 영수증 첨부철 합계가 일치해야 합니다.
+- 영수증마다 사업자등록번호가 보여야 합니다.
+- 파일은 서류별로 하나씩 올려 주세요.
+제출 마감: 10월 31일(토) 18시까지`
 
 export const adminDocuments = ['사업계획서', '물품매매계약서', '영수증 첨부철'] as const
 export type AdminDocument = typeof adminDocuments[number]
