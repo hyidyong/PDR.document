@@ -123,7 +123,7 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
   }
 
   return <div className="admin-app">
-    <AdminHeader active={menu} onExit={onExit} onNavigate={openMenu} />
+    <AdminHeader active={menu} onExit={onExit} onNavigate={openMenu} onOpenApplicant={openApplicant} />
     <ReadyNotice />
     {SHOW_MOCK_BANNER && <div className="admin-integration-notice" role="status"><strong>디자인 미리보기</strong> 관리자 API가 아직 연결되지 않아 아래 현황·보완 요청·승인 동작은 mock 데이터로만 표시됩니다.</div>}
     {loading || !project

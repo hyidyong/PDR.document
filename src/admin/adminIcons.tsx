@@ -30,3 +30,4 @@ export function UsersIcon(props: IconProps) { return <Icon {...props}><circle cx
 export function CalendarIcon(props: IconProps) { return <Icon {...props}><rect height="15" rx="2" width="17" x="3.5" y="5" {...stroke} /><path d="M3.5 10h17M8 3v4m8-4v4" {...stroke} /></Icon> }
 export function MailIcon(props: IconProps) { return <Icon {...props}><rect height="14" rx="2" width="18" x="3" y="5" {...stroke} /><path d="m4 7 8 6 8-6" {...stroke} /></Icon> }
 export function ClipboardIcon(props: IconProps) { return <Icon {...props}><path d="M9 4.5h6v3H9v-3Z" {...stroke} /><path d="M15 5.5h2.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19V7a1.5 1.5 0 0 1 1.5-1.5H9" {...stroke} /></Icon> }
+export function BellIcon(props: IconProps) { return <Icon {...props}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" {...stroke} /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" {...stroke} /></Icon> }

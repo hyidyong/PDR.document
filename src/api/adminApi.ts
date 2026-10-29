@@ -25,6 +25,8 @@ type AdminState = {
   previousStatus: Record<string, AdminStatus>
   // Made with 새 프로젝트 만들기. Optional so state saved before this field still loads.
   createdProjects?: CreatedProject[]
+  // 알림 벨: events after this time are unread. null until the bell is first opened. Optional for older saved state.
+  notificationsReadAt?: string | null
 }
 
 const STORAGE_KEY = 'modit.admin.v1'
@@ -32,7 +34,8 @@ const STORAGE_KEY = 'modit.admin.v1'
 const FALLBACK_PREVIOUS_STATUS: AdminStatus = 'SUBMITTED'
 
 const copy = <T,>(value: T): T => JSON.parse(JSON.stringify(value))
-const now = () => toLocalIso(new Date())
+// Local time down to the millisecond, so an event and the 알림 읽음 time in the same minute still compare correctly.
+const now = () => { const date = new Date(); return `${toLocalIso(date)}:${String(date.getSeconds()).padStart(2, '0')}.${String(date.getMilliseconds()).padStart(3, '0')}` }
 
 function seed(): AdminState {
   return {
@@ -40,6 +43,7 @@ function seed(): AdminState {
     events: Object.fromEntries(mockApplicants.map((applicant) => [applicant.applicantId, seedEvents(applicant)])),
     previousStatus: {},
     createdProjects: [],
+    notificationsReadAt: null,
   }
 }
 
@@ -167,6 +171,18 @@ export async function createProject(input: NewProjectInput): Promise<CreatedProj
   state.createdProjects = [...projects, project]
   save()
   return copy(project)
+}
+
+/** 알림 벨: when the 담당자 last opened it (null = never, so every 알림 is unread). */
+export async function getNotificationsReadAt(): Promise<string | null> {
+  return state.notificationsReadAt ?? null
+}
+
+/** Opening the 알림 marks everything up to now as read. */
+export async function markNotificationsRead(): Promise<string> {
+  state.notificationsReadAt = now()
+  save()
+  return state.notificationsReadAt
 }
 
 /** Restores the 시연 데이터 to its starting state. */
