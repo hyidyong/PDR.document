@@ -5,7 +5,8 @@
 
 /* Header */
 .admin-header { gap: 48px; }
-.admin-header nav { display: flex; gap: 8px; }
+.admin-header nav { display: flex; gap: 8px; position: relative; }
+.admin-header__notice { background: var(--color-lavender); border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, .08); color: var(--color-brand); font-size: 12px; font-weight: 600; left: 0; margin: 0; padding: 8px 12px; position: absolute; top: calc(100% - 8px); white-space: nowrap; z-index: 10; }
 .admin-header__search { align-items: center; background: var(--color-surface-muted); border-radius: 8px; color: var(--color-text-secondary); display: flex; gap: 8px; height: 40px; margin-left: auto; padding: 0 14px; width: 300px; }
 .admin-header__search input { background: transparent; border: 0; color: var(--color-text-primary); flex: 1; font-size: 13px; min-width: 0; outline: 0; }
 

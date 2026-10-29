@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { AuthError, login } from '../api/authApi'
-import type { Applicant } from '../api'
 import { BrandLogo, Button, CheckIcon, FileIcon } from '../components/common'
 import { setSessionUser } from '../store/sessionStore'
 import { A2RoleSelect } from './A2RoleSelect'
@@ -29,10 +28,9 @@ function ArrowRightIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
 }
 
-// onAdminDemo opens the 담당자 screens on mock data without logging in.
-export function A1Login({ onApplicantAuthenticated, onAdminAuthenticated, onAdminDemo, onPersonalCheck }: {
-  onApplicantAuthenticated: (applicant: Applicant, deadlineAt?: string | null) => void
-  onAdminAuthenticated: (deadlineAt?: string | null) => void
+// onAuthenticated leads to the A2 역할 선택 (App); onAdminDemo opens the 담당자 screens on mock data without logging in.
+export function A1Login({ onAuthenticated, onAdminDemo, onPersonalCheck }: {
+  onAuthenticated: (deadlineAt?: string | null) => void
   onAdminDemo: () => void
   onPersonalCheck: () => void
 }) {
@@ -51,8 +49,7 @@ export function A1Login({ onApplicantAuthenticated, onAdminAuthenticated, onAdmi
     try {
       const result = await login(email, password)
       setSessionUser(result.user)
-      if (result.kind === 'admin') onAdminAuthenticated(result.project.deadlineAt)
-      else onApplicantAuthenticated(result.applicant, result.project.deadlineAt)
+      onAuthenticated(result.project.deadlineAt)
     } catch (error) {
       if (error instanceof AuthError) setErrors({ [error.field]: error.message })
       else setNotice(error instanceof Error ? error.message : '로그인하지 못했습니다.')

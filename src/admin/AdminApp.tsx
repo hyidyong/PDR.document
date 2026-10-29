@@ -19,11 +19,11 @@ const byRecent = (a: AdminApplicant, b: AdminApplicant) => (b.lastSubmittedAt ??
 const comparators: Record<DashboardSort, (a: AdminApplicant, b: AdminApplicant) => number> = { recent: byRecent, name: byName }
 
 // deadlineAt comes from the login result (App); it overrides the project's own deadline.
-export function AdminApp({ deadlineAt, onExit }: { deadlineAt?: string | null; onExit: () => void }) {
-  return <AdminProvider><AdminScreens deadlineAt={deadlineAt} onExit={onExit} /></AdminProvider>
+export function AdminApp({ deadlineAt, onExit, onSwitchRole }: { deadlineAt?: string | null; onExit: () => void; onSwitchRole?: () => void }) {
+  return <AdminProvider><AdminScreens deadlineAt={deadlineAt} onExit={onExit} onSwitchRole={onSwitchRole} /></AdminProvider>
 }
 
-function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onExit: () => void }) {
+function AdminScreens({ deadlineAt, onExit, onSwitchRole }: { deadlineAt?: string | null; onExit: () => void; onSwitchRole?: () => void }) {
   const { loading, project: storedProject, applicants, eventsById, requestRevision, approve, cancelApproval } = useAdmin()
   const [filter, setFilter] = useState<DashboardFilter>({ tab: 'ALL', query: '', sort: 'recent', page: 1 })
   // Kept here so the 체크박스 선택 survives a trip to D6 and back.
@@ -75,7 +75,7 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
   }
 
   return <div className="admin-app">
-    <AdminHeader onExit={onExit} onHome={goHome} />
+    <AdminHeader onExit={onExit} onHome={goHome} onSwitchRole={onSwitchRole} />
     <div className="admin-integration-notice" role="status"><strong>디자인 미리보기</strong> 관리자 API가 아직 연결되지 않아 아래 현황·보완 요청·승인 동작은 mock 데이터로만 표시됩니다.</div>
     {loading || !project
       ? null

@@ -1,7 +1,7 @@
 // Who is signed in, for the screens to show (e.g. the A3 프로필 메뉴).
 // The login token itself is kept by the Supabase client (src/supabase.ts); screens never read it directly.
 import { useSyncExternalStore } from 'react'
-import type { SessionUser } from '../api/authApi'
+import type { SessionUser, UserRole } from '../api/authApi'
 
 let current: SessionUser | null = null
 const listeners = new Set<() => void>()
@@ -13,6 +13,13 @@ export function getSessionUser() {
 
 export function setSessionUser(user: SessionUser) {
   current = user
+  emit()
+}
+
+// The role picked on A2 lives only here (screen memory), not in Supabase.
+export function setSessionRole(role: UserRole, name?: string) {
+  if (!current) return
+  current = { ...current, role, name: name ?? current.name }
   emit()
 }
 

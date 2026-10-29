@@ -17,8 +17,8 @@ function LogoutIcon() {
 
 const NOT_READY = '데모에서는 준비 중이에요'
 
-// A3 프로필 메뉴. Only 로그아웃 works; 모드 전환 and 설정 show a not-ready notice.
-export function A3ProfileMenu({ name, email, roleLabel, switchLabel, onLogout }: { name: string; email: string; roleLabel: string; switchLabel: string; onLogout: () => void }) {
+// A3 프로필 메뉴. 모드 전환 calls onSwitch when given (back to the A2 역할 선택), otherwise shows a not-ready notice like 설정.
+export function A3ProfileMenu({ name, email, roleLabel, switchLabel, onLogout, onSwitch }: { name: string; email: string; roleLabel: string; switchLabel: string; onLogout: () => void; onSwitch?: () => void }) {
   const [open, setOpen] = useState(false)
   const [notice, setNotice] = useState('')
   const ref = useRef<HTMLDivElement>(null)
@@ -45,7 +45,7 @@ export function A3ProfileMenu({ name, email, roleLabel, switchLabel, onLogout }:
         <span className="a3-avatar a3-avatar--large">{initial}</span>
         <div><div className="a3-menu__name"><strong>{name}</strong><span>{roleLabel}</span></div><small>{email}</small></div>
       </div>
-      {item(switchLabel, <SwitchIcon />, () => setNotice(NOT_READY), 'is-strong')}
+      {item(switchLabel, <SwitchIcon />, onSwitch ?? (() => setNotice(NOT_READY)), 'is-strong')}
       {item('설정', <SettingsIcon />, () => setNotice(NOT_READY))}
       {notice && <p className="a3-menu__notice" role="status">{notice}</p>}
       <hr />
