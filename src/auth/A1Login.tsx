@@ -126,12 +126,12 @@ export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPerso
             <div className={hasDemoApplicant ? 'a1-demo__row' : undefined}>
               {hasDemoApplicant && <button className="a1-demo-button a1-demo-button--applicant" disabled={isSubmitting} onClick={() => void startApplicantDemo()} type="button">
                 <span className="a1-demo-button__icon"><FileIcon /></span>
-                <span className="a1-demo-button__text"><strong>사용자 데모</strong><small>신청자 · 서류 점검</small></span>
+                <span className="a1-demo-button__text"><strong>사용자 데모</strong></span>
                 <ArrowRightIcon />
               </button>}
               <button className="a1-demo-button a1-demo-button--admin" disabled={isSubmitting} onClick={onAdminDemo} type="button">
                 <span className="a1-demo-button__icon"><BriefcaseIcon /></span>
-                <span className="a1-demo-button__text"><strong>담당자 데모</strong><small>한국대학교 창업지원단 · 제출 현황 확인</small></span>
+                <span className="a1-demo-button__text"><strong>담당자 데모</strong></span>
                 <ArrowRightIcon />
               </button>
             </div>
