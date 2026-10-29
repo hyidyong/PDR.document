@@ -27,6 +27,23 @@ function BriefcaseIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><rect height="12" rx="2" stroke="currentColor" strokeWidth="1.7" width="18" x="3" y="7" /><path d="M9 7V5h6v2M3 12h18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" /></svg>
 }
 
+function SparkleIcon() {
+  return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="m12 4 1.6 4.4L18 10l-4.4 1.6L12 16l-1.6-4.4L6 10l4.4-1.6L12 4ZM18 15l.7 1.8 1.8.7-1.8.7L18 20l-.7-1.8-1.8-.7 1.8-.7L18 15Z" fill="currentColor" /></svg>
+}
+
+function WarningIcon() {
+  return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M12 4 3 19.5h18L12 4Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.8" /><path d="M12 10v4.5M12 17v.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" /></svg>
+}
+
+function PenOffIcon() {
+  return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="m14.5 6.5 3 3M6 18l1.2-4.2 7.6-7.6a2.1 2.1 0 0 1 3 3l-7.6 7.6L6 18ZM4 4l16 16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
+}
+
+// 매도인 서명 (the art only).
+function SignatureMark() {
+  return <svg aria-hidden="true" fill="none" viewBox="0 0 40 24"><path d="M4 18c3-1 5-5 6-9 1-3 4-4 4 0 0 5-3 9-5 9s-1-4 2-6 5-2 6 1-1 5 1 5 3-3 5-4 4 2 7 1" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" /><path d="M6 21h28" stroke="currentColor" strokeLinecap="round" strokeWidth="1.2" /></svg>
+}
+
 function ArrowRightIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
 }
@@ -99,11 +116,25 @@ export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPerso
           <h1><span>제출 전에 한 번 더,</span><span>꼼꼼하게 <em>모딧.</em></span></h1>
           <p>공고나 양식을 넣으면 AI가 내 서류를 먼저 확인해드려요.</p>
         </div>
+        {/* A 물품매매계약서 being checked: 계약 금액 and the missing 매수인 서명 are what the AI finds. */}
         <div className="a1-art" aria-hidden="true">
-          <div className="a1-art__sheet"><FileIcon width={96} height={96} /></div>
-          <span className="a1-art__chip a1-art__chip--pass"><CheckIcon width={14} height={14} />서명·날인 확인</span>
-          <span className="a1-art__chip a1-art__chip--error">금액 불일치 1</span>
+          <div className="a1-art__stack" />
+          <div className="a1-doc">
+            <div className="a1-doc__head"><span className="a1-doc__icon"><FileIcon width={20} height={20} /></span><span className="a1-doc__name"><strong>물품매매계약서</strong><small>PDF · 2페이지</small></span></div>
+            <div className="a1-doc__lines"><i /><i /><i /><i className="is-short" /></div>
+            <span className="a1-doc__scan" />
+            <div className="a1-doc__amount"><span>계약 금액</span><strong>1,350,000원</strong></div>
+            <div className="a1-doc__signs">
+              <div className="a1-doc__sign"><span>매도인</span><SignatureMark /></div>
+              <div className="a1-doc__sign is-missing"><span>매수인</span><em>(인)</em></div>
+            </div>
+          </div>
+          <span className="a1-art__chip a1-art__chip--ai"><span className="a1-art__chip-icon"><SparkleIcon /></span>AI 점검 완료</span>
+          <span className="a1-art__chip a1-art__chip--docs"><span className="a1-art__chip-icon"><CheckIcon width={14} height={14} /></span>필수 서류 3/3</span>
+          <span className="a1-art__chip a1-art__chip--amount"><span className="a1-art__chip-icon"><WarningIcon /></span>금액 30,000원 차이</span>
+          <span className="a1-art__chip a1-art__chip--sign"><span className="a1-art__chip-icon"><PenOffIcon /></span>매수인 서명 누락</span>
         </div>
+        <p className="a1-tagline"><span><b>모</b>두의 서류를 완벽하게 E<b>dit</b>하다, <b>모딧</b></span><small>모두의 + Edit</small></p>
       </section>
 
       <div className="a1-column">

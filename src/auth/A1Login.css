@@ -8,11 +8,47 @@
 .a1-copy h1 { display: flex; flex-direction: column; font-size: 48px; font-weight: 800; gap: 4px; line-height: 1.3; margin: 0; }
 .a1-copy h1 em { color: var(--color-brand); font-style: normal; }
 .a1-copy p { color: var(--color-text-secondary); font-size: 16px; line-height: 1.6; margin: 0; }
-.a1-art { align-items: center; align-self: center; display: flex; height: 400px; justify-content: center; max-width: 520px; position: relative; width: 100%; }
-.a1-art__sheet { align-items: center; background: var(--color-lavender); border-radius: 50%; color: var(--color-brand); display: flex; height: 240px; justify-content: center; width: 240px; }
-.a1-art__chip { align-items: center; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-pill); box-shadow: 0 8px 24px #2a2c4014; display: inline-flex; font-size: 13px; font-weight: 600; gap: 6px; padding: 10px 14px; position: absolute; }
-.a1-art__chip--pass { color: var(--color-pass); left: 6%; top: 22%; }
-.a1-art__chip--error { color: var(--color-error); bottom: 22%; right: 6%; }
+
+/* 브랜드 패널 그림: 점검 중인 물품매매계약서와 결과 칩 (HTML/CSS only) */
+.a1-art { align-self: center; height: 340px; margin: 24px 0; max-width: 460px; position: relative; width: 100%; }
+.a1-art__stack, .a1-doc { border-radius: 16px; left: 50%; position: absolute; top: 50%; width: 220px; }
+.a1-art__stack { background: var(--color-surface-muted); border: 1px solid var(--color-border); height: 260px; transform: translate(-38%, -46%) rotate(6deg); }
+.a1-doc { background: var(--color-surface); border: 1px solid var(--color-border); box-shadow: 0 16px 40px #2a2c4014; display: flex; flex-direction: column; gap: 14px; padding: 18px; transform: translate(-50%, -50%); }
+.a1-doc__head { align-items: center; border-bottom: 1px solid var(--color-border); display: flex; gap: 10px; padding-bottom: 14px; }
+.a1-doc__icon { align-items: center; background: var(--color-lavender); border-radius: 10px; color: var(--color-brand); display: flex; flex: 0 0 36px; height: 36px; justify-content: center; }
+.a1-doc__name { display: flex; flex-direction: column; gap: 2px; }
+.a1-doc__name strong { font-size: 14px; font-weight: 700; }
+.a1-doc__name small { color: var(--color-text-secondary); font-size: 11px; }
+.a1-doc__lines { display: flex; flex-direction: column; gap: 8px; }
+.a1-doc__lines i { background: var(--color-surface-muted); border-radius: 999px; display: block; height: 6px; }
+.a1-doc__lines i:nth-child(2) { width: 80%; }
+.a1-doc__lines i.is-short { width: 58%; }
+/* AI가 훑는 스캔 줄: 카드 밖까지 번지는 보라 빛 */
+.a1-doc__scan { background: linear-gradient(90deg, transparent, var(--color-brand) 20%, var(--color-brand) 80%, transparent); height: 2px; left: -16px; position: absolute; right: -16px; top: 98px; }
+.a1-doc__scan::before { background: linear-gradient(180deg, transparent, #7467d926 50%, transparent); content: ''; height: 28px; left: 0; position: absolute; right: 0; top: -13px; }
+.a1-doc__amount { align-items: center; background: var(--color-warning-bg); border: 1px solid #f2c66d; border-radius: 10px; display: flex; font-size: 11px; justify-content: space-between; padding: 10px 12px; }
+.a1-doc__amount span { color: var(--color-text-secondary); }
+.a1-doc__amount strong { color: var(--color-warning); font-size: 13px; font-weight: 700; }
+.a1-doc__signs { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+.a1-doc__sign { background: var(--color-surface-muted); border: 1px solid var(--color-border); border-radius: 10px; display: flex; flex-direction: column; font-size: 10px; gap: 6px; height: 52px; padding: 8px 10px; }
+.a1-doc__sign span { color: var(--color-text-secondary); }
+.a1-doc__sign svg { color: var(--color-text-primary); height: 20px; width: 34px; }
+.a1-doc__sign.is-missing { background: var(--color-error-bg); border-color: #f2b8ba; }
+.a1-doc__sign em { color: var(--color-error); font-size: 11px; font-style: normal; font-weight: 600; }
+.a1-art__chip { align-items: center; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-pill); box-shadow: 0 8px 24px #2a2c4014; color: var(--color-text-primary); display: inline-flex; font-size: 12px; font-weight: 600; gap: 8px; padding: 6px 14px 6px 6px; position: absolute; white-space: nowrap; }
+.a1-art__chip-icon { align-items: center; border-radius: 999px; display: flex; flex: 0 0 24px; height: 24px; justify-content: center; }
+.a1-art__chip-icon svg { height: 14px; width: 14px; }
+.a1-art__chip--ai { right: 12%; top: 0; }
+.a1-art__chip--ai .a1-art__chip-icon { background: var(--color-brand); color: #fff; }
+.a1-art__chip--docs { left: 0; top: 28%; }
+.a1-art__chip--docs .a1-art__chip-icon { background: var(--color-pass-bg); color: var(--color-pass); }
+.a1-art__chip--amount { right: 0; top: 60%; }
+.a1-art__chip--amount .a1-art__chip-icon { background: var(--color-warning-bg); color: var(--color-warning); }
+.a1-art__chip--sign { bottom: 2%; left: 4%; }
+.a1-art__chip--sign .a1-art__chip-icon { background: var(--color-error-bg); color: var(--color-error); }
+.a1-tagline { align-items: center; border-top: 1px solid var(--color-border); display: flex; font-size: 15px; font-weight: 700; gap: 16px; justify-content: space-between; margin: 0; padding-top: 24px; }
+.a1-tagline b { color: var(--color-brand); font-weight: 800; }
+.a1-tagline small { color: var(--color-text-secondary); font-size: 11px; font-weight: 500; white-space: nowrap; }
 
 .a1-column { display: flex; flex: 0 0 440px; flex-direction: column; gap: 20px; justify-content: center; }
 .a1-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); display: flex; flex-direction: column; gap: 24px; padding: 40px; }
@@ -69,13 +105,15 @@
   .a1-copy h1 { font-size: 36px; }
 }
 @media (max-width: 860px) {
+  /* Scaled as one piece so the chips keep their places around the card. */
+  .a1-brand { overflow: hidden; }
+  .a1-art { height: 340px; margin: 0 0 -102px; max-width: none; transform: scale(.7); transform-origin: top center; width: 440px; }
+  .a1-eyebrow { font-size: 12px; word-break: keep-all; }
+  .a1-tagline { align-items: flex-start; flex-direction: column; gap: 4px; }
   .a1-header { padding: 0 16px; }
   .a1-body { flex-direction: column; padding: 8px 16px 40px; }
   .a1-brand { padding: 32px 24px; }
   .a1-copy h1 { font-size: 30px; }
-  .a1-art { height: 220px; }
-  .a1-art__sheet { height: 160px; width: 160px; }
-  .a1-art__sheet svg { height: 64px; width: 64px; }
   .a1-column { flex-basis: auto; }
   .a1-card { padding: 28px 20px; }
 }
