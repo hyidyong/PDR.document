@@ -380,6 +380,12 @@
 .d1-dots { align-items: center; background: none; border: 0; border-radius: 6px; color: var(--color-text-secondary); cursor: pointer; display: flex; height: 28px; justify-content: center; width: 28px; }
 .d1-dots:hover { background: var(--color-surface-muted); }
 
+/* D10 서류 현황 (reuses the D1 card and table) */
+.d10-col-progress { width: 240px; }
+.d10-col-count { width: 120px; }
+.d10-table td strong { font-weight: 600; }
+.d10-table .d1-progress { width: 100%; }
+
 @media (max-width: 1100px) {
   .d1-middle { grid-template-columns: 1fr; }
   .d1-stats { gap: 16px; grid-template-columns: 1fr 1fr; }
