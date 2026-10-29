@@ -13,12 +13,18 @@ export type AdminProject = ProjectView & { linkSharedAt: string; zipFileName: st
 export type ApplicantDocuments = { clubName: string; issues: AdminIssue[] }
 export type AdminChange ={ applicant: AdminApplicant; events: AdminEvent[] }
 export type RevisionInput = { comment: string; attachAi: boolean }
+/** 새 프로젝트 만들기 (D2~D4 마법사) 결과. Only the 담당자 screens use it; there is no 신청자 side yet. */
+export type NewProjectDocument = { name: string; required: boolean; formFileName: string | null; note: string }
+export type NewProjectInput = { name: string; org: string; deadlineAt: string; slug: string; rosterCount: number; rosterMode: 'list' | 'link'; guide: string; documents: NewProjectDocument[] }
+export type CreatedProject = NewProjectInput & { id: string; createdAt: string }
 
 type AdminState = {
   applicants: AdminApplicant[]
   events: Record<string, AdminEvent[]>
   // Status before 승인, so 승인 취소 can restore it.
   previousStatus: Record<string, AdminStatus>
+  // Made with 새 프로젝트 만들기. Optional so state saved before this field still loads.
+  createdProjects?: CreatedProject[]
 }
 
 const STORAGE_KEY = 'modit.admin.v1'
@@ -33,6 +39,7 @@ function seed(): AdminState {
     applicants: copy(mockApplicants),
     events: Object.fromEntries(mockApplicants.map((applicant) => [applicant.applicantId, seedEvents(applicant)])),
     previousStatus: {},
+    createdProjects: [],
   }
 }
 
@@ -145,6 +152,21 @@ export async function cancelApproval(applicantId: string): Promise<AdminChange> 
 export async function downloadDocumentsZip(applicantIds: string[]): Promise<{ downloaded: boolean }> {
   applicantIds.forEach(find)
   return { downloaded: false }
+}
+
+/** Projects made with 새 프로젝트 만들기, oldest first. */
+export async function getCreatedProjects(): Promise<CreatedProject[]> {
+  return copy(state.createdProjects ?? [])
+}
+
+/** 새 프로젝트 만들기: saves the project in the mock state (D1 lists it). Slugs are unique, like a real link would be. */
+export async function createProject(input: NewProjectInput): Promise<CreatedProject> {
+  const projects = state.createdProjects ?? []
+  if (input.slug === 'startup-2026' || projects.some((project) => project.slug === input.slug)) throw new Error('이미 쓰고 있는 링크 주소예요. 다른 주소를 입력해 주세요.')
+  const project: CreatedProject = { ...copy(input), id: `project-${Date.now()}`, createdAt: now() }
+  state.createdProjects = [...projects, project]
+  save()
+  return copy(project)
 }
 
 /** Restores the 시연 데이터 to its starting state. */

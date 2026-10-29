@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import * as adminApi from '../api/adminApi'
-import type { AdminChange, AdminProject, RevisionInput } from '../api/adminApi'
+import type { AdminChange, AdminProject, CreatedProject, NewProjectInput, RevisionInput } from '../api/adminApi'
 import type { AdminApplicant, AdminEvent } from '../admin/mockAdminData'
 
 type AdminStore = {
@@ -10,6 +10,8 @@ type AdminStore = {
   project: AdminProject | null
   applicants: AdminApplicant[]
   eventsById: Record<string, AdminEvent[]>
+  createdProjects: CreatedProject[]
+  createProject: (input: NewProjectInput) => Promise<CreatedProject>
   requestRevision: (applicantId: string, input: RevisionInput) => Promise<void>
   approve: (applicantId: string) => Promise<void>
   cancelApproval: (applicantId: string) => Promise<void>
@@ -31,17 +33,19 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [project, setProject] = useState<AdminProject | null>(null)
   const [applicants, setApplicants] = useState<AdminApplicant[]>([])
   const [eventsById, setEventsById] = useState<Record<string, AdminEvent[]>>({})
+  const [createdProjects, setCreatedProjects] = useState<CreatedProject[]>([])
 
   useEffect(() => {
     let active = true
     const reset = consumeResetParam()
     const load = async () => {
       if (reset) await adminApi.resetDemo()
-      const [nextProject, nextApplicants, nextEvents] = await Promise.all([adminApi.getProject(), adminApi.getApplicants(), adminApi.getAllEvents()])
+      const [nextProject, nextApplicants, nextEvents, nextCreated] = await Promise.all([adminApi.getProject(), adminApi.getApplicants(), adminApi.getAllEvents(), adminApi.getCreatedProjects()])
       if (!active) return
       setProject(nextProject)
       setApplicants(nextApplicants)
       setEventsById(nextEvents)
+      setCreatedProjects(nextCreated)
       setLoading(false)
     }
     load().catch((error) => {
@@ -58,9 +62,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const requestRevision = useCallback(async (applicantId: string, input: RevisionInput) => apply(await adminApi.requestRevision(applicantId, input)), [apply])
   const approve = useCallback(async (applicantId: string) => apply(await adminApi.approve(applicantId)), [apply])
+  const createProject = useCallback(async (input: NewProjectInput) => {
+    const project = await adminApi.createProject(input)
+    setCreatedProjects((current) => [...current, project])
+    return project
+  }, [])
   const cancelApproval = useCallback(async (applicantId: string) => apply(await adminApi.cancelApproval(applicantId)), [apply])
 
-  const value = useMemo(() => ({ loading, project, applicants, eventsById, requestRevision, approve, cancelApproval }), [loading, project, applicants, eventsById, requestRevision, approve, cancelApproval])
+  const value = useMemo(() => ({ loading, project, applicants, eventsById, createdProjects, createProject, requestRevision, approve, cancelApproval }), [loading, project, applicants, eventsById, createdProjects, createProject, requestRevision, approve, cancelApproval])
   return <AdminStoreContext.Provider value={value}>{children}</AdminStoreContext.Provider>
 }
 
