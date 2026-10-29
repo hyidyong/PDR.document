@@ -45,7 +45,7 @@ export function AppHeader({ activePage, onNavigate, onLogout, profileName = '김
     <BrandLogo onClick={() => onNavigate('home')} />
     <MainNavigation activePage={activePage} onNavigate={onNavigate} />
     {actionLabel === '로그아웃'
-      ? <><ApplicantNotifications onOpen={() => onNavigate('check')} /><A3ProfileMenu email={sessionUser?.email ?? ''} name={sessionUser?.name ?? profileName} onLogout={onLogout} roleLabel="신청자" /></>
+      ? <><ApplicantNotifications onOpen={() => onNavigate('check')} /><A3ProfileMenu email={sessionUser?.email ?? ''} name={sessionUser?.name ?? profileName} onLogout={onLogout} roleLabel="사용자" /></>
       : <button aria-label={`${profileName} ${actionLabel}`} className="app-header__profile" onClick={onLogout} title={actionLabel} type="button">{profileName} <span>{actionLabel}</span></button>}
   </header>
 }
