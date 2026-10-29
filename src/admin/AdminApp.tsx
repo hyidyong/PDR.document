@@ -30,7 +30,7 @@ export function AdminApp({ deadlineAt, onExit, onSwitchRole }: { deadlineAt?: st
 
 function AdminScreens({ deadlineAt, onExit, onSwitchRole }: { deadlineAt?: string | null; onExit: () => void; onSwitchRole?: () => void }) {
   const { loading, project: storedProject, applicants, eventsById, requestRevision, approve, cancelApproval } = useAdmin()
-  // 홈 = D1, 프로젝트 = D5 (D6~D9 open on top of 프로젝트).
+  // 홈 = D1, 프로젝트·신청자 = D5 (D6~D9 open on top of it; the header keeps the menu it came from).
   const [menu, setMenu] = useState<AdminMenu>('home')
   const [filter, setFilter] = useState<DashboardFilter>({ tab: 'ALL', query: '', sort: 'recent', page: 1 })
   // Kept here so the 체크박스 선택 survives a trip to D6 and back.

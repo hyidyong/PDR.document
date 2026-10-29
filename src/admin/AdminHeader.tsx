@@ -4,9 +4,9 @@ import { BrandLogo } from '../components/common'
 import { useSessionUser } from '../store/sessionStore'
 import { SearchIcon } from './adminIcons'
 
-export type AdminMenu = 'home' | 'project'
-// 홈 (D1) and 프로젝트 (D5) are built; 신청자 and 서류 관리 show a 준비 중 notice.
-const menus: { label: string; menu?: AdminMenu }[] = [{ label: '홈', menu: 'home' }, { label: '프로젝트', menu: 'project' }, { label: '신청자' }, { label: '서류 관리' }]
+export type AdminMenu = 'home' | 'project' | 'applicants'
+// 홈 = D1; 프로젝트 and 신청자 both open the D5 신청자 목록. 서류 관리 shows a 준비 중 notice.
+const menus: { label: string; menu?: AdminMenu }[] = [{ label: '홈', menu: 'home' }, { label: '프로젝트', menu: 'project' }, { label: '신청자', menu: 'applicants' }, { label: '서류 관리' }]
 // Shown when 담당자 데모 is opened without logging in.
 const demoReviewer = { name: '박담당', email: 'admin@example.com' }
 
