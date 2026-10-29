@@ -6,7 +6,8 @@ import type { MainPage } from '../components/common'
 
 export type AppScreen = 'login' | 'role' | 'applicant' | 'admin' | 'personal'
 // wizardStep: 새 프로젝트 만들기 step (1 기본 정보 ~ 4 링크 공유) when the wizard is open.
-export type AdminNav = { menu: AdminMenu; openId: string | null; revision: boolean; wizardStep?: 1 | 2 | 3 | 4 }
+// projectId: the project whose D5 is open under 프로젝트 (none = D12 프로젝트 목록).
+export type AdminNav = { menu: AdminMenu; openId: string | null; revision: boolean; wizardStep?: 1 | 2 | 3 | 4; projectId?: string }
 // demo: 담당자 데모 opened without a login, so it may be revisited after 로그아웃.
 export type NavState = { screen: AppScreen; page?: MainPage; demo?: boolean; admin?: AdminNav }
 type StoredNav = NavState & { modit: true }
