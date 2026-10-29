@@ -4,6 +4,10 @@ import { ChevronDownIcon } from '../components/common'
 import { showNotice } from '../store/noticeStore'
 import './A3ProfileMenu.css'
 
+function SwitchIcon() {
+  return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M4 8h15m0 0-4-4m4 4-4 4M20 16H5m0 0 4-4m-4 4 4 4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" /></svg>
+}
+
 function SettingsIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7" /><path d="M12 3.5v2M12 18.5v2M3.5 12h2M18.5 12h2M6 6l1.4 1.4M16.6 16.6 18 18M6 18l1.4-1.4M16.6 7.4 18 6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.7" /></svg>
 }
@@ -12,8 +16,8 @@ function LogoutIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M14 4.5H6.5v15H14M10 12h10m0 0-3.5-3.5M20 12l-3.5 3.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" /></svg>
 }
 
-// A3 프로필 메뉴: 계정 정보, 설정(준비 중), 로그아웃. 역할을 바꿀 때는 브라우저 뒤로가기로 A2 역할 선택에 돌아가요.
-export function A3ProfileMenu({ name, email, roleLabel, onLogout }: { name: string; email: string; roleLabel: string; onLogout: () => void }) {
+// A3 프로필 메뉴: 계정 정보, 역할 다시 고르기(onSwitchRole, 로그인했을 때만), 설정(준비 중), 로그아웃.
+export function A3ProfileMenu({ name, email, roleLabel, onLogout, onSwitchRole }: { name: string; email: string; roleLabel: string; onLogout: () => void; onSwitchRole?: () => void }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const initial = name.slice(0, 1)
@@ -39,6 +43,7 @@ export function A3ProfileMenu({ name, email, roleLabel, onLogout }: { name: stri
         <span className="a3-avatar a3-avatar--large">{initial}</span>
         <div><div className="a3-menu__name"><strong>{name}</strong><span>{roleLabel}</span></div><small>{email}</small></div>
       </div>
+      {onSwitchRole && item('역할 다시 고르기', <SwitchIcon />, () => { setOpen(false); onSwitchRole() }, 'is-strong')}
       {item('설정', <SettingsIcon />, () => showNotice())}
       <hr />
       {item('로그아웃', <LogoutIcon />, onLogout, 'is-muted')}

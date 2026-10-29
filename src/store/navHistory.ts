@@ -30,6 +30,16 @@ export function replaceNav(state: NavState, url = currentUrl()) {
   window.history.replaceState({ ...state, modit: true }, '', url)
 }
 
+/**
+ * [역할 다시 고르기] in the 프로필 메뉴: records an A2 entry and lets App show it through its usual popstate handling,
+ * so App needs no extra wiring and 뒤로가기 from A2 returns to the screen it was opened from.
+ */
+export function openRoleSelect() {
+  const state: StoredNav = { screen: 'role', modit: true }
+  window.history.pushState(state, '', '/')
+  window.dispatchEvent(new PopStateEvent('popstate', { state }))
+}
+
 /** Calls handler with the restored state on 뒤로가기/앞으로가기 (null for entries this app did not write). */
 export function usePopNav(handler: (state: NavState | null) => void) {
   const latest = useRef(handler)

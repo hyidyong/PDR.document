@@ -1,6 +1,7 @@
 import { A3ProfileMenu } from '../auth/A3ProfileMenu'
 import { showNotice } from '../store/noticeStore'
 import { BrandLogo } from '../components/common'
+import { openRoleSelect } from '../store/navHistory'
 import { useSessionUser } from '../store/sessionStore'
 import { AdminNotifications } from './AdminNotifications'
 import { SearchIcon } from './adminIcons'
@@ -25,6 +26,6 @@ export function AdminHeader({ active, onNavigate, onOpenApplicant, onExit }: { a
     </nav>
     <label className="admin-header__search"><SearchIcon width={16} height={16} /><input aria-label="프로젝트, 신청자 검색" onKeyDown={(event) => { if (event.key === 'Enter') showNotice('검색은 준비 중이에요') }} placeholder="프로젝트, 신청자를 검색해보세요." /></label>
     <AdminNotifications onOpenApplicant={onOpenApplicant} />
-    <A3ProfileMenu email={user.email} name={user.name} onLogout={onExit} roleLabel="담당자" />
+    <A3ProfileMenu email={user.email} name={user.name} onLogout={onExit} onSwitchRole={sessionUser ? openRoleSelect : undefined} roleLabel="담당자" />
   </header>
 }

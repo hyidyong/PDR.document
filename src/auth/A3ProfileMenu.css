@@ -17,4 +17,5 @@
 .a3-menu__item:hover { background: var(--color-surface-muted); }
 .a3-menu__item svg { color: var(--color-text-secondary); flex: 0 0 18px; height: 18px; width: 18px; }
 .a3-menu__item.is-muted { color: var(--color-text-secondary); }
+.a3-menu__item.is-strong { font-weight: 600; }
 .a3-menu hr { background: var(--color-border); border: 0; height: 1px; margin: 4px 0; width: 100%; }

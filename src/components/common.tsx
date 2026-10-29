@@ -2,6 +2,7 @@ import type { ReactNode, SVGProps } from 'react'
 import moditLogo from '../assets/modit-logo.png'
 import { A3ProfileMenu } from '../auth/A3ProfileMenu'
 import { ApplicantNotifications } from '../auth/ApplicantNotifications'
+import { openRoleSelect } from '../store/navHistory'
 import { useSessionUser } from '../store/sessionStore'
 import './components.css'
 
@@ -45,7 +46,7 @@ export function AppHeader({ activePage, onNavigate, onLogout, profileName = '김
     <BrandLogo onClick={() => onNavigate('home')} />
     <MainNavigation activePage={activePage} onNavigate={onNavigate} />
     {actionLabel === '로그아웃'
-      ? <><ApplicantNotifications onOpen={() => onNavigate('check')} /><A3ProfileMenu email={sessionUser?.email ?? ''} name={sessionUser?.name ?? profileName} onLogout={onLogout} roleLabel="사용자" /></>
+      ? <><ApplicantNotifications onOpen={() => onNavigate('check')} /><A3ProfileMenu email={sessionUser?.email ?? ''} name={sessionUser?.name ?? profileName} onLogout={onLogout} onSwitchRole={sessionUser ? openRoleSelect : undefined} roleLabel="사용자" /></>
       : <button aria-label={`${profileName} ${actionLabel}`} className="app-header__profile" onClick={onLogout} title={actionLabel} type="button">{profileName} <span>{actionLabel}</span></button>}
   </header>
 }
