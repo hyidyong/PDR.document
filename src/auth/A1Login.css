@@ -4,6 +4,7 @@
 
 .a1-brand { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); display: flex; flex: 1; flex-direction: column; justify-content: space-between; min-width: 0; padding: 64px; }
 .a1-copy { display: flex; flex-direction: column; gap: 20px; }
+.a1-eyebrow { color: var(--color-brand); font-size: 14px; font-weight: 600; margin-bottom: -8px; }
 .a1-copy h1 { display: flex; flex-direction: column; font-size: 48px; font-weight: 800; gap: 4px; line-height: 1.3; margin: 0; }
 .a1-copy h1 em { color: var(--color-brand); font-style: normal; }
 .a1-copy p { color: var(--color-text-secondary); font-size: 16px; line-height: 1.6; margin: 0; }
@@ -54,7 +55,7 @@
 .a1-demo-button__icon { align-items: center; background: #ffffff26; border-radius: 10px; display: inline-flex; flex: 0 0 40px; height: 40px; justify-content: center; }
 .a1-demo-button__icon svg { height: 20px; width: 20px; }
 .a1-demo-button__text { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
-.a1-demo-button__text strong { font-size: 16px; font-weight: 700; }
+.a1-demo-button__text strong { font-size: 16px; font-weight: 700; white-space: nowrap; }
 .a1-demo-button__text small { font-size: 12px; opacity: .8; }
 .a1-solo-link { align-items: center; align-self: center; background: none; border: 0; color: var(--color-brand); display: inline-flex; font-size: 14px; font-weight: 700; gap: 6px; margin-top: 4px; padding: 6px 4px; }
 .a1-solo-link svg { height: 16px; width: 16px; }

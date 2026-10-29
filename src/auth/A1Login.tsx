@@ -94,6 +94,7 @@ export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPerso
     <div className="a1-body">
       <section className="a1-brand">
         <div className="a1-copy">
+          <span className="a1-eyebrow">AI 기반 서류 사전검수 및 요청·제출 연계 클라우드 플랫폼</span>
           <h1><span>제출 전에 한 번 더,</span><span>꼼꼼하게 <em>모딧.</em></span></h1>
           <p>공고나 양식을 넣으면 AI가 내 서류를 먼저 확인해드려요.</p>
         </div>
