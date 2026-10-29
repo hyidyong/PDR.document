@@ -3,7 +3,7 @@ import type { FormEvent } from 'react'
 import { BrandLogo, Button, CheckIcon, FileIcon } from '../components/common'
 import './A1Login.css'
 
-const demoNotice = '데모 버전에서는 체험하기를 이용해 주세요'
+const demoNotice = '로그인 없이 둘러보기'
 
 function MailIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><rect height="14" rx="2" stroke="currentColor" strokeWidth="1.7" width="18" x="3" y="5" /><path d="m4 7 8 6 8-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" /></svg>
@@ -68,12 +68,12 @@ export function A1Login({ onApplicantDemo, onAdminDemo, onPersonalCheck }: { onA
             <div className="a1-demo__divider"><span>데모 체험</span></div>
             <button className="a1-demo-button a1-demo-button--applicant" onClick={onApplicantDemo} type="button">
               <span className="a1-demo-button__icon"><UserIcon /></span>
-              <span className="a1-demo-button__text"><strong>신청자로 체험하기</strong><small>김청년 · 창업동아리 지원사업 정산 서류 제출</small></span>
+              <span className="a1-demo-button__text"><strong>신청자 데모</strong><small>김청년 · 창업동아리 지원사업 정산 서류 제출</small></span>
               <ArrowRightIcon />
             </button>
             <button className="a1-demo-button a1-demo-button--admin" onClick={onAdminDemo} type="button">
               <span className="a1-demo-button__icon"><BriefcaseIcon /></span>
-              <span className="a1-demo-button__text"><strong>담당자로 체험하기</strong><small>한국대학교 창업지원단 · 제출 현황 확인</small></span>
+              <span className="a1-demo-button__text"><strong>담당자 데모</strong><small>한국대학교 창업지원단 · 제출 현황 확인</small></span>
               <ArrowRightIcon />
             </button>
             <button className="a1-solo-link" onClick={onPersonalCheck} type="button">기관 링크 없이 혼자 점검하기 <ArrowRightIcon /></button>

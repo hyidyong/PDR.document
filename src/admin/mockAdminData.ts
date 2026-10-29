@@ -1,4 +1,5 @@
 // Mock data for the admin (담당자) screens. These are not server data.
+// Screens read applicant data through src/api/adminApi.ts, which seeds itself from this file.
 import type { Status } from '../components/common'
 
 export type AdminStatus = 'DRAFT' | 'SUBMITTED' | 'SUBMITTED_INCOMPLETE' | 'NEEDS_REVISION' | 'REVIEW_PENDING' | 'APPROVED'
@@ -12,13 +13,15 @@ export type AdminApplicant = {
   lastSubmittedAt: string | null
 }
 
-export type AdminEventKind = 'link' | 'ai' | 'submit' | 'revision' | 'resubmit' | 'approved'
-export type AdminEvent = { kind: AdminEventKind; at: string; label: string; tone: 'muted' | 'error' | 'navy' | 'brand'; comment?: string }
+export type AdminEventKind = 'link' | 'ai' | 'submit' | 'revision' | 'resubmit' | 'approved' | 'approval-cancelled'
+// attachAi: whether a 보완 요청 was sent together with the AI 검사 결과.
+export type AdminEvent = { kind: AdminEventKind; at: string; label: string; tone: 'muted' | 'error' | 'navy' | 'brand'; comment?: string; attachAi?: boolean }
 
 export const adminProject = {
   name: '2026 창업동아리 지원사업 정산',
   deadlineBadge: '마감 10월 31일 · D-3',
   linkSharedAt: '2026-10-24T09:10',
+  zipFileName: '2026_창업동아리_정산.zip',
 } as const
 
 export const adminStatusOrder: AdminStatus[] = ['DRAFT', 'SUBMITTED', 'SUBMITTED_INCOMPLETE', 'NEEDS_REVISION', 'REVIEW_PENDING', 'APPROVED']

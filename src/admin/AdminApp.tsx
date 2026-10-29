@@ -1,48 +1,92 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { getApplicantDocuments } from '../api/adminApi'
+import type { ApplicantDocuments } from '../api/adminApi'
+import { AdminProvider, useAdmin } from '../store/AdminStore'
+import { AdminConfirmDialog } from './AdminConfirmDialog'
 import { AdminHeader } from './AdminHeader'
 import { D5Dashboard } from './D5Dashboard'
-import type { DashboardFilter } from './D5Dashboard'
+import type { DashboardFilter, DashboardSort } from './D5Dashboard'
 import { D6ApplicantDetail } from './D6ApplicantDetail'
-import { mockApplicants, seedEvents, toLocalIso } from './mockAdminData'
-import type { AdminApplicant, AdminEvent } from './mockAdminData'
+import { D8DownloadModal } from './D8DownloadModal'
+import { D9Approved } from './D9Approved'
+import type { AdminApplicant } from './mockAdminData'
 import '../screens/DocumentCheckFlow.css'
 import './admin.css'
 
-// 최근 제출순: newest first, applicants who have not submitted last.
-const byRecent = (a: AdminApplicant, b: AdminApplicant) => (b.lastSubmittedAt ?? '').localeCompare(a.lastSubmittedAt ?? '')
+const byName = (a: AdminApplicant, b: AdminApplicant) => a.name.localeCompare(b.name, 'ko') || a.studentId.localeCompare(b.studentId)
+// 최근 제출순: newest first, applicants who have not submitted last (by name among themselves).
+const byRecent = (a: AdminApplicant, b: AdminApplicant) => (b.lastSubmittedAt ?? '').localeCompare(a.lastSubmittedAt ?? '') || byName(a, b)
+const comparators: Record<DashboardSort, (a: AdminApplicant, b: AdminApplicant) => number> = { recent: byRecent, name: byName }
 
 export function AdminApp({ onExit }: { onExit: () => void }) {
-  const [applicants, setApplicants] = useState(mockApplicants)
-  const [events, setEvents] = useState<Record<string, AdminEvent[]>>(() => Object.fromEntries(mockApplicants.map((applicant) => [applicant.applicantId, seedEvents(applicant)])))
-  const [filter, setFilter] = useState<DashboardFilter>({ tab: 'ALL', query: '', page: 1 })
+  return <AdminProvider><AdminScreens onExit={onExit} /></AdminProvider>
+}
+
+function AdminScreens({ onExit }: { onExit: () => void }) {
+  const { loading, project, applicants, eventsById, requestRevision, approve, cancelApproval } = useAdmin()
+  const [filter, setFilter] = useState<DashboardFilter>({ tab: 'ALL', query: '', sort: 'recent', page: 1 })
+  // Kept here so the 체크박스 선택 survives a trip to D6 and back.
+  const [selected, setSelected] = useState<Set<string>>(() => new Set())
   const [openId, setOpenId] = useState<string | null>(null)
-  const sorted = useMemo(() => [...applicants].sort(byRecent), [applicants])
+  const [documents, setDocuments] = useState<{ applicantId: string; data: ApplicantDocuments } | null>(null)
+  const [confirmingApproval, setConfirmingApproval] = useState(false)
+  const [approving, setApproving] = useState(false)
+  const [downloadOpen, setDownloadOpen] = useState(false)
+  const sorted = useMemo(() => [...applicants].sort(comparators[filter.sort]), [applicants, filter.sort])
 
-  const update = (applicantId: string, status: AdminApplicant['status'], event: AdminEvent) => {
-    setApplicants((current) => current.map((applicant) => applicant.applicantId === applicantId ? { ...applicant, status } : applicant))
-    setEvents((current) => ({ ...current, [applicantId]: [...current[applicantId], event] }))
-  }
-  const requestRevision = (applicantId: string, comment: string) => update(applicantId, 'NEEDS_REVISION', { kind: 'revision', at: toLocalIso(new Date()), label: '보완 요청', tone: 'error', comment })
-  const approve = (applicantId: string) => update(applicantId, 'APPROVED', { kind: 'approved', at: toLocalIso(new Date()), label: '승인 완료', tone: 'navy' })
-
-  const goHome = () => setOpenId(null)
   const index = sorted.findIndex((applicant) => applicant.applicantId === openId)
   const current = index >= 0 ? sorted[index] : null
+  const currentId = current?.applicantId
+
+  useEffect(() => {
+    if (!currentId) return
+    let active = true
+    getApplicantDocuments(currentId)
+      .then((data) => { if (active) setDocuments({ applicantId: currentId, data }) })
+      .catch((error) => console.error(error))
+    return () => { active = false }
+  }, [currentId])
+
+  const goHome = () => { setOpenId(null); setConfirmingApproval(false) }
+  const move = (step: number) => setOpenId(sorted[(index + step + sorted.length) % sorted.length].applicantId)
+  const confirmApproval = async () => {
+    if (!current) return
+    setApproving(true)
+    try {
+      await approve(current.applicantId)
+      setConfirmingApproval(false)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setApproving(false)
+    }
+  }
+
+  const currentDocuments = current && documents?.applicantId === current.applicantId ? documents.data : null
+  const detail = () => {
+    if (!project || !current || !currentDocuments) return null
+    const shared = { applicant: current, documents: currentDocuments, events: eventsById[current.applicantId] ?? [], onBack: goHome, onMove: move, position: index + 1, project, total: sorted.length }
+    // An approved applicant opens on D9; 승인 취소 brings them back to D6.
+    return current.status === 'APPROVED'
+      ? <D9Approved {...shared} key={current.applicantId} onCancelApproval={() => cancelApproval(current.applicantId)} />
+      : <D6ApplicantDetail {...shared} key={current.applicantId} onApprove={() => setConfirmingApproval(true)} onRequestRevision={(comment, attachAi) => requestRevision(current.applicantId, { comment, attachAi })} />
+  }
 
   return <div className="admin-app">
     <AdminHeader onExit={onExit} onHome={goHome} />
-    {current
-      ? <D6ApplicantDetail
-          applicant={current}
-          events={events[current.applicantId]}
-          key={current.applicantId}
-          onApprove={() => approve(current.applicantId)}
-          onBack={goHome}
-          onMove={(step) => setOpenId(sorted[(index + step + sorted.length) % sorted.length].applicantId)}
-          onRequestRevision={(comment) => requestRevision(current.applicantId, comment)}
-          position={index + 1}
-          total={sorted.length}
-        />
-      : <D5Dashboard applicants={sorted} filter={filter} onFilterChange={setFilter} onOpen={setOpenId} />}
+    {loading || !project
+      ? null
+      : current
+        ? detail()
+        : <D5Dashboard applicants={sorted} filter={filter} onDownload={() => setDownloadOpen(true)} onFilterChange={setFilter} onOpen={setOpenId} onSelectedChange={setSelected} project={project} selected={selected} />}
+    {downloadOpen && project && <D8DownloadModal applicants={sorted} onClose={() => setDownloadOpen(false)} project={project} selected={selected} />}
+    {confirmingApproval && current && <AdminConfirmDialog
+      busy={approving}
+      confirmLabel="승인하기"
+      description="승인하면 신청자에게 이메일로 알려드려요. 승인한 뒤에도 승인 취소할 수 있어요."
+      onCancel={() => setConfirmingApproval(false)}
+      onConfirm={confirmApproval}
+      title={`${current.name}님의 서류를 승인할까요?`}
+    />}
   </div>
 }
