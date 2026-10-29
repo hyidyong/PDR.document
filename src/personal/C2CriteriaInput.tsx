@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { ChangeEvent, DragEvent } from 'react'
 import { Button, ChevronRightIcon, FileIcon, UploadIcon } from '../components/common'
 import { acceptedFormats, acceptedFormatsLabel, fileFormat, formatSize, isAcceptedFile, recentChecks } from './personalMock'
+import { generateDocumentChecklist } from '../api'
+import type { ChecklistResponse } from '../api'
 
 const maxLength = 5000
 
@@ -27,14 +29,12 @@ export function RecentCard({ items }: { items: Array<{ name: string; meta: strin
   </section>
 }
 
-export function C2CriteriaInput({ onNext }: { onNext: () => void }) {
+export function C2CriteriaInput({ onNext }: { onNext: (response: ChecklistResponse, sourceText: string) => void }) {
   const [text, setText] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [fileError, setFileError] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const [isMaking, setIsMaking] = useState(false)
-  const timer = useRef<number | undefined>(undefined)
-  useEffect(() => () => window.clearTimeout(timer.current), [])
 
   const selectFile = (next?: File) => {
     if (!next) return
@@ -45,7 +45,20 @@ export function C2CriteriaInput({ onNext }: { onNext: () => void }) {
   const pasteFromClipboard = async () => {
     try { const pasted = await navigator.clipboard.readText(); setText((current) => (current + pasted).slice(0, maxLength)) } catch { /* 권한이 없으면 직접 붙여넣기 */ }
   }
-  const makeChecklist = () => { setIsMaking(true); timer.current = window.setTimeout(onNext, 1200) }
+  const makeChecklist = async () => {
+    if (!text.trim()) {
+      setFileError('현재 AI API는 공고문 파일 자체를 받지 않습니다. 공고문 텍스트를 붙여 넣어 주세요.')
+      return
+    }
+    setIsMaking(true); setFileError('')
+    try {
+      const response = await generateDocumentChecklist({ documentType: '지원사업 제출서류', officialInstructions: text.trim() })
+      if (response.schema_version !== '2.0' || !Array.isArray(response.items)) throw new Error('AI 체크리스트 응답 형식을 확인할 수 없습니다.')
+      onNext(response, text.trim())
+    } catch (error) {
+      setFileError(error instanceof Error ? error.message : 'AI 체크리스트 생성에 실패했습니다.')
+    } finally { setIsMaking(false) }
+  }
   const canMake = Boolean(text.trim() || file) && !isMaking
 
   return <main className="personal-main">

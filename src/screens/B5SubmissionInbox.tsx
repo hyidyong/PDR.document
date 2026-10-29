@@ -1,7 +1,7 @@
 import { AppHeader, Button, FileIcon, StatusBadge } from '../components/common'
 import type { MainPage } from '../components/common'
-import { documentLabels } from './checkModel'
-import type { DocumentId, DocumentState, Finding } from './checkModel'
+import { collectIssueFindings, documentLabels } from './checkModel'
+import type { DocumentId, DocumentState } from './checkModel'
 import './B5SubmissionInbox.css'
 
 const documentIds: DocumentId[] = ['plan', 'contract', 'receipts']
@@ -25,16 +25,6 @@ function formatDate(date: Date, includeTime = false) {
   return includeTime ? `${day} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}` : day
 }
 
-function getFindingSource(finding: Finding) {
-  return finding.number === 1 ? '물품매매계약서 · 1쪽' : '서류 간 비교 · 물품매매계약서 ↔ 영수증 첨부철'
-}
-
-function getFindingDescription(finding: Finding) {
-  if (finding.number === 1) return '매수인(동아리 대표) 서명란과 날인란이 비어 있어요.'
-  if (finding.number === 2) return '계약서 금액은 1,350,000원인데 영수증 첨부철 합계는 1,320,000원이에요.'
-  return finding.title
-}
-
 export function B5SubmissionInbox({ documents, originalDocuments, status, submittedAt, reviewRequestedAt, resubmittedAt, requestedIds, onResubmit, onNavigate, onLogout }: {
   documents: DocumentState
   originalDocuments: DocumentState
@@ -48,10 +38,10 @@ export function B5SubmissionInbox({ documents, originalDocuments, status, submit
   onLogout: () => void
 }) {
   const uploadedIds = documentIds.filter((id) => documents[id])
+  const hasMockInspection = uploadedIds.some((id) => documents[id]?.source === 'MOCK')
+  const hasActualInspection = uploadedIds.some((id) => documents[id]?.source.startsWith('AZURE'))
   const missingIds = documentIds.filter((id) => !documents[id])
-  const findings = [...(documents.contract?.findings ?? []), ...(documents.receipts?.findings ?? [])]
-    .filter((finding, index, all) => all.findIndex((other) => other.number === finding.number) === index)
-    .sort((left, right) => left.number - right.number)
+  const findings = collectIssueFindings(documents)
   const errors = findings.filter((finding) => finding.status === 'recommend').length
   const reviews = findings.filter((finding) => finding.status === 'unverifiable').length
   const outcome = status === 'incomplete' ? '제출(미비)' : '제출 완료'
@@ -60,9 +50,7 @@ export function B5SubmissionInbox({ documents, originalDocuments, status, submit
     : '서류가 제출 완료 상태로 접수됐어요. 담당자가 확인할 예정이에요.'
   const details = [errors && `오류 ${errors}건`, reviews && `확인 필요 ${reviews}건`, missingIds.length && `미업로드 ${missingIds.length}건`].filter(Boolean).join(', ')
   const reviewPending = Boolean(reviewRequestedAt && !resubmittedAt)
-  const originalFindings = [...(originalDocuments.contract?.findings ?? []), ...(originalDocuments.receipts?.findings ?? [])]
-    .filter((finding, index, all) => all.findIndex((other) => other.number === finding.number) === index)
-    .sort((left, right) => left.number - right.number)
+  const originalFindings = collectIssueFindings(originalDocuments)
   const originalMissing = documentIds.filter((id) => !originalDocuments[id])
   const originalErrors = originalFindings.filter((finding) => finding.status === 'recommend').length
   const originalReviews = originalFindings.filter((finding) => finding.status === 'unverifiable').length
@@ -109,13 +97,14 @@ export function B5SubmissionInbox({ documents, originalDocuments, status, submit
 
           <section className="b5-section" aria-labelledby="b5-ai-title">
             <div className="b5-section__head"><h2 id="b5-ai-title">AI 검사 기록</h2><span>{formatDate(latestDate)} {resubmittedAt ? '재제출' : '제출'} 전에 AI가 먼저 찾은 내용이에요</span></div>
-            {findings.length ? <div className="b5-results">{findings.map((finding) => <article className="b5-result-card" key={finding.number}>
-              <div className="b5-result-card__head"><span className={`b5-result-card__badge is-${finding.status}`}>{finding.status === 'recommend' ? '오류' : '확인 필요'}</span><span>{getFindingSource(finding)}</span></div>
+            {findings.length ? <div className="b5-results">{findings.map((finding) => <article className="b5-result-card" key={`${finding.number}-${finding.title}`}>
+              <div className="b5-result-card__head"><span className={`b5-result-card__badge is-${finding.status}`}>{finding.status === 'recommend' ? '오류' : '확인 필요'}</span><span>{finding.location}</span></div>
               <h3>{finding.title}</h3>
-              <div className="b5-result-card__details"><div><span>무엇이</span><p>{getFindingDescription(finding)}</p></div><div><span>어디서</span><p>{finding.location}</p></div><div><span>어떻게 고치나</span><p>{finding.advice}</p></div></div>
+              <div className="b5-result-card__details"><div><span>무엇이</span><p>{finding.title}</p></div><div><span>어디서</span><p>{finding.location}</p></div><div><span>어떻게 고치나</span><p>{finding.advice}</p></div></div>
               <p className="b5-result-card__note">AI 검사 결과는 참고용이에요. 최종 판단은 담당자가 해요</p>
             </article>)}</div> : <div className="b5-empty">{uploadedIds.length ? 'AI 검사에서 남은 항목이 없어요.' : '업로드된 서류가 없어 AI 검사 기록이 없어요.'}</div>}
-            <p className="b5-mock-note">시연용 mock AI 검사 결과예요. 실제 파일 내용은 분석하지 않았어요.</p>
+            {hasMockInspection && <p className="b5-mock-note">일부 서류는 시연용 mock 검사 결과이며 실제 파일 내용을 분석하지 않았어요.</p>}
+            {hasActualInspection && <p className="b5-mock-note">지출결과서는 실제 Azure AI 추출 결과에 검수 규칙을 적용했습니다. 최종 판단은 담당자가 합니다.</p>}
             {resubmittedAt && <div className="b5-prior-record"><h3>이전 제출의 서류와 AI 검사 기록</h3><span>{formatDate(submittedAt)} · {originalDetails || 'AI 검사에서 남은 항목 없음'}</span><ul>{documentIds.filter((id) => originalDocuments[id]).map((id) => <li key={id}>{documentLabels[id]} · {originalDocuments[id]!.file.name}</li>)}</ul>{originalFindings.map((finding) => <div className="b5-prior-record__finding" key={finding.number}><strong>{finding.status === 'recommend' ? '오류' : '확인 필요'} · {finding.title}</strong><span>{finding.location}</span><p>{finding.advice}</p></div>)}</div>}
           </section>
         </div>

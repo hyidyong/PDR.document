@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { AppHeader, Button, UploadIcon } from '../components/common'
 import type { MainPage } from '../components/common'
@@ -7,10 +7,10 @@ import { B3DocumentCheck } from './B3DocumentCheck'
 import { B4SubmissionConfirm } from './B4SubmissionConfirm'
 import { B5EmptyInbox, B5SubmissionInbox } from './B5SubmissionInbox'
 import { B6ResubmissionConfirm } from './B6ResubmissionConfirm'
-import { documentLabels } from './checkModel'
+import { collectIssueFindings, documentLabels } from './checkModel'
 import type { DocumentId, DocumentState, FlowOverview, SubmissionStatus, UploadedDocument } from './checkModel'
 import './DocumentCheckFlow.css'
-import { getCase, getDocuments, getHistory, mapDocuments, resubmitCase, submitCase, toUploadedDocument, uploadDocument } from '../api'
+import { downloadDocument, getCase, getDocuments, getHistory, mapDocuments, resubmitCase, submitCase, toUploadedDocument, uploadDocument } from '../api'
 import type { ApiDocument, ApiInspection, CaseView } from '../api'
 import { formatDeadlineCompact } from '../utils/projectDeadline'
 
@@ -33,8 +33,8 @@ export function DocumentCheckFlow({ applicantId, deadlineAt, page, onNavigate, o
   const fileInputRef = useRef<HTMLInputElement>(null)
   const uploadTargetRef = useRef<DocumentId | null>(null)
 
-  const applyServerState = (caseView: CaseView, history: ApiInspection[], versions: Partial<Record<DocumentId, ApiDocument[]>>) => {
-    const current = mapDocuments(caseView.currentDocuments, history)
+  const applyServerState = useCallback(async (caseView: CaseView, history: ApiInspection[], versions: Partial<Record<DocumentId, ApiDocument[]>>) => {
+    const current = mapDocuments(caseView.currentDocuments, Object.values(caseView.currentInspections))
     const feedback = caseView.feedback.at(-1)
     const firstSubmission = caseView.submissions[0]
     const originals: DocumentState = {}
@@ -45,23 +45,46 @@ export function DocumentCheckFlow({ applicantId, deadlineAt, page, onNavigate, o
         if (document) originals[id] = toUploadedDocument(document, history.filter((item) => item.documentId === document.id).at(-1))
       }
     }
-    setDocuments(current)
-    setSubmittedDocuments(current)
-    setOriginalDocuments(feedback ? originals : current)
+    const hydrate = async (state: DocumentState, apiDocuments: Partial<Record<DocumentId, ApiDocument>>) => {
+      const hydrated: DocumentState = { ...state }
+      await Promise.all((Object.keys(apiDocuments) as DocumentId[]).map(async (id) => {
+        const apiDocument = apiDocuments[id]
+        if (!apiDocument || !hydrated[id]) return
+        try {
+          hydrated[id] = { ...hydrated[id]!, file: await downloadDocument(applicantId, apiDocument) }
+        } catch (error) {
+          setFileError(error instanceof Error ? error.message : 'PDF를 불러오지 못했습니다.')
+        }
+      }))
+      return hydrated
+    }
+    const hydratedCurrent = await hydrate(current, caseView.currentDocuments)
+    const originalApiDocuments: Partial<Record<DocumentId, ApiDocument>> = {}
+    if (feedback) {
+      for (const id of ['plan', 'contract', 'receipts'] as DocumentId[]) {
+        const version = feedback.originalVersions[id]
+        const document = versions[id]?.find((item) => item.version === version)
+        if (document) originalApiDocuments[id] = document
+      }
+    }
+    const hydratedOriginals = feedback ? await hydrate(originals, originalApiDocuments) : hydratedCurrent
+    setDocuments(hydratedCurrent)
+    setSubmittedDocuments(hydratedCurrent)
+    setOriginalDocuments(hydratedOriginals)
     setSubmissionStatus(caseView.status === 'DRAFT' ? 'draft' : caseView.status === 'SUBMITTED' ? 'submitted' : 'incomplete')
     setSubmittedAt(firstSubmission ? new Date(firstSubmission.at) : null)
     setRequestedIds(feedback?.targetRequirementIds ?? [])
     setReviewRequestedAt(feedback ? new Date(feedback.createdAt) : null)
     setResubmittedAt(caseView.submissions.length > 1 ? new Date(caseView.submissions.at(-1)!.at) : null)
-  }
+  }, [applicantId])
 
   useEffect(() => {
     let active = true
     Promise.all([getCase(applicantId), getHistory(applicantId), getDocuments(applicantId)])
-      .then(([caseView, history, versions]) => { if (active) applyServerState(caseView, history.inspections, versions) })
+      .then(async ([caseView, history, versions]) => { if (active) await applyServerState(caseView, history.inspections, versions) })
       .catch((error) => { if (active) setFileError(error instanceof Error ? error.message : '제출 정보를 불러오지 못했습니다.') })
     return () => { active = false }
-  }, [applicantId, page])
+  }, [applicantId, page, applyServerState])
 
   useEffect(() => {
     onOverviewChange({ documents, checkingId, submissionStatus, submittedAt, reviewRequestedAt, resubmittedAt, isResubmitting })
@@ -85,8 +108,13 @@ export function DocumentCheckFlow({ applicantId, deadlineAt, page, onNavigate, o
       const uploaded = await uploadDocument(applicantId, id, file)
       const caseView = await getCase(applicantId)
       const inspection = caseView.currentInspections[id]
-      setDocuments((current) => ({ ...current, [id]: toUploadedDocument(uploaded, inspection) }))
-      if (file.size > 4 * 1024 * 1024) setAnalysisNotice('업로드는 완료되었지만 4MB를 초과한 PDF는 AI 분석을 진행할 수 없습니다.')
+      setDocuments((current) => ({ ...current, [id]: { ...toUploadedDocument(uploaded, inspection), file } }))
+      const edgeUnauthorized = inspection?.source === 'AI_ERROR'
+        && inspection.findings.some((finding) => finding.id === 'AI_ERROR' && finding.message.includes('[HTTP 401 /'))
+      if (edgeUnauthorized) {
+        setAnalysisNotice('PDF는 정상 업로드됐지만 Edge AI 인증이 거부되었습니다. 세션을 강제 갱신하거나 유료 분석을 자동 재시도하지 않았습니다.')
+      }
+      if (file.size > 4_000_000) setAnalysisNotice('업로드는 완료되었지만 4MB를 초과한 PDF는 AI 분석을 진행할 수 없습니다.')
     } catch (error) {
       setFileError(error instanceof Error ? error.message : '파일을 업로드하지 못했습니다.')
     } finally {
@@ -118,9 +146,9 @@ export function DocumentCheckFlow({ applicantId, deadlineAt, page, onNavigate, o
   const current = documents[activeId]
   const passedCount = (Object.values(documents) as UploadedDocument[]).filter((doc) => doc.status === 'pass').length
   const remaining = Object.values(documents) as UploadedDocument[]
-  const issueFindings = [...(documents.contract?.findings ?? []), ...(documents.receipts?.findings ?? [])]
-  const errorCount = issueFindings.filter((finding) => finding.status === 'recommend' && finding.number === 1).length
-  const reviewCount = issueFindings.some((finding) => finding.number === 2) ? 1 : 0
+  const issueFindings = collectIssueFindings(documents)
+  const errorCount = issueFindings.filter((finding) => finding.status === 'recommend').length
+  const reviewCount = issueFindings.filter((finding) => finding.status === 'unverifiable').length
   const checkRound = remaining.reduce((sum, doc) => sum + doc.version, 0)
   const latestCheck = remaining.reduce<Date | null>((latest, doc) => !latest || doc.checkedAt > latest ? doc.checkedAt : latest, null)
   const checkTime = latestCheck ? `${String(latestCheck.getMonth() + 1).padStart(2, '0')}.${String(latestCheck.getDate()).padStart(2, '0')} ${String(latestCheck.getHours()).padStart(2, '0')}:${String(latestCheck.getMinutes()).padStart(2, '0')}` : ''
@@ -131,7 +159,7 @@ export function DocumentCheckFlow({ applicantId, deadlineAt, page, onNavigate, o
     try {
       await submitCase(applicantId)
       const [caseView, history, versions] = await Promise.all([getCase(applicantId), getHistory(applicantId), getDocuments(applicantId)])
-      applyServerState(caseView, history.inspections, versions)
+      await applyServerState(caseView, history.inspections, versions)
       setShowSubmitConfirm(false)
       onNavigate('inbox')
     } catch (error) {
@@ -153,7 +181,7 @@ export function DocumentCheckFlow({ applicantId, deadlineAt, page, onNavigate, o
     try {
       await resubmitCase(applicantId)
       const [caseView, history, versions] = await Promise.all([getCase(applicantId), getHistory(applicantId), getDocuments(applicantId)])
-      applyServerState(caseView, history.inspections, versions)
+      await applyServerState(caseView, history.inspections, versions)
       setShowResubmitConfirm(false)
       setIsResubmitting(false)
       onNavigate('inbox')

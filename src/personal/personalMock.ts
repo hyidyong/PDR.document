@@ -1,7 +1,14 @@
-export type RequiredDoc = { name: string; note: string }
+export type RequiredDoc = {
+  name: string; note: string; requirement?: string; issuer?: string | null; howToObtain?: string | null;
+  estimatedTime?: string | null; deadline?: string | null; filenameRule?: string | null; sourceUrl?: string | null;
+  sourceType?: string; verification?: string; evidence?: string
+}
 export type RuleGroupId = 'writing' | 'file' | 'submit'
 export type RuleItem = { text: string; example?: string }
-export type Criteria = { title: string; term: string; docs: RequiredDoc[]; rules: Record<RuleGroupId, RuleItem[]> }
+export type Criteria = {
+  title: string; term: string; docs: RequiredDoc[]; rules: Record<RuleGroupId, RuleItem[]>;
+  webSearchUsed?: boolean; sourceVerification?: string; disclaimer?: string; questions?: string[]; fromApi?: boolean
+}
 
 export type PersonalFinding = { title: string; location: string; advice: string }
 export type PersonalUpload = { file: File; attempt: number; passed: boolean; finding?: PersonalFinding; checkedAt: Date }

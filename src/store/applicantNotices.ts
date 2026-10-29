@@ -33,8 +33,9 @@ export function buildApplicantNotices(view: CaseWithApproval, deadlineAt: string
   for (const [id, inspection] of Object.entries(view.currentInspections)) {
     if (!inspection || inspection.status === 'PASS') continue
     // Same rule as src/api.ts mapFinding: finding "2" and UNVERIFIABLE results are 확인 필요, the rest 오류.
-    const review = inspection.findings.filter((finding) => finding.id === '2' || inspection.status === 'UNVERIFIABLE').length
-    const error = inspection.findings.length - review
+    const issues = inspection.findings.filter((finding) => !(inspection.source === 'OPENAI_RULES' && finding.kind === 'info'))
+    const review = issues.filter((finding) => finding.kind === 'review' || (inspection.source === 'MOCK' && finding.id === '2') || inspection.status === 'UNVERIFIABLE').length
+    const error = issues.length - review
     const counts = [error && `오류 ${error}`, review && `확인 필요 ${review}`].filter(Boolean).join(' · ')
     notices.push({ key: `ai-${inspection.id}`, at: inspection.checkedAt, tone: error ? 'error' : 'brand', text: `${label(id)} AI 점검 결과 · ${counts || '확인 필요'}` })
   }

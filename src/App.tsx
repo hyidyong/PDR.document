@@ -11,11 +11,13 @@ import { emptyFlowOverview } from './screens/checkModel'
 import { ModitHome } from './screens/ModitHome'
 import { UsageGuide } from './screens/UsageGuide'
 import type { Applicant } from './api'
-import { signOut } from './api'
-import { currentNav, defaultAdminNav, pushNav, replaceNav, usePopNav } from './store/navHistory'
+import { resolveCurrentSession, signOut } from './api'
+import { defaultAdminNav, pushNav, replaceNav, usePopNav } from './store/navHistory'
 import type { AppScreen } from './store/navHistory'
-import { clearSessionUser, getSessionUser, setSessionRole } from './store/sessionStore'
+import { clearSessionUser, getSessionUser, setSessionRole, setSessionUser } from './store/sessionStore'
+
 import { DEFAULT_PROJECT_DEADLINE, resolveProjectDeadline } from './utils/projectDeadline'
+import { supabase } from './supabase'
 
 function App() {
   const [screen, setScreen] = useState<AppScreen>('login')
@@ -26,8 +28,6 @@ function App() {
   const [applicant, setApplicant] = useState<Applicant | null>(null)
   const [deadlineAt, setDeadlineAt] = useState(DEFAULT_PROJECT_DEADLINE)
   // Screen changes are recorded in the browser history (src/store/navHistory.ts) so 뒤로가기 works.
-  // The app always starts on A1, so the first entry is marked as A1 (also after a refresh).
-  useEffect(() => { if (currentNav()?.screen !== 'login') replaceNav({ screen: 'login' }) }, [])
   usePopNav((state) => {
     const next = state ?? { screen: 'login' }
     const loggedIn = getSessionUser() !== null
@@ -52,6 +52,49 @@ function App() {
     if (fromLogin) replaceNav({ screen: 'role' }, '/')
     setSessionRole('applicant', value.name); setApplicant(value); setHasVerifiedOnce(true); setVerified(true); setPage('home'); setScreen('applicant'); pushNav({ screen: 'applicant', page: 'home' }, '/')
   }
+  const [authReady, setAuthReady] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    let signedOut = false
+    clearSessionUser()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (!active || event !== 'SIGNED_OUT') return
+      signedOut = true
+      clearSessionUser()
+      setVerified(false)
+      setApplicant(null)
+      setPage('home')
+      setScreen('login')
+      replaceNav({ screen: 'login' }, '/')
+    })
+    resolveCurrentSession()
+      .then(async (result) => {
+        if (!active || signedOut) return
+        if (!result) { replaceNav({ screen: 'login' }); return }
+        const { data } = await supabase.auth.getSession()
+        if (!active || signedOut || !data.session) return
+        setSessionUser({ email: data.session.user.email ?? '', name: result.kind === 'applicant' ? result.applicant.name : '담당자', role: result.kind })
+        replaceNav({ screen: 'role' })
+        setDeadlineAt(resolveProjectDeadline(result.project.deadlineAt))
+        if (result.kind === 'admin') {
+          setScreen('admin')
+          pushNav({ screen: 'admin', admin: defaultAdminNav }, '/admin')
+          return
+        }
+        setApplicant(result.applicant)
+        setHasVerifiedOnce(true)
+        setVerified(true)
+        setPage('check')
+        setScreen('applicant')
+        pushNav({ screen: 'applicant', page: 'check' }, '/')
+      })
+      .catch(() => { /* Keep the valid login screen when session restoration fails. */ })
+      .finally(() => { if (active) setAuthReady(true) })
+    return () => { active = false; subscription.unsubscribe() }
+  }, [])
+
+  if (!authReady) return null
   if (screen === 'login') return <A1Login
     onAuthenticated={(projectDeadline) => { setDeadlineAt(resolveProjectDeadline(projectDeadline)); setScreen('role'); replaceNav({ screen: 'role' }) }}
     onApplicantDemo={async (projectDeadline) => { setDeadlineAt(resolveProjectDeadline(projectDeadline)); await chooseRole('applicant', true) }}

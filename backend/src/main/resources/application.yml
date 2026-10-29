@@ -8,6 +8,13 @@ spring:
 server:
   port: ${PORT:8080}
 app:
+  ai:
+    provider: ${APP_AI_PROVIDER:mock}
+    # Set SUPABASE_AI_FUNCTION=analyze-expense-hj to roll back without a code change.
+    function-name: ${SUPABASE_AI_FUNCTION:analyze-expense-hj-v2}
+    checklist-function-name: ${SUPABASE_CHECKLIST_FUNCTION:generate-document-checklist}
+  openai:
+    model: ${OPENAI_MODEL:gpt-4.1-mini}
   repository:
     provider: ${APP_REPOSITORY_PROVIDER:memory}
   storage:
