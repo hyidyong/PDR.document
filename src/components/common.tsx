@@ -1,6 +1,7 @@
 import type { ReactNode, SVGProps } from 'react'
 import moditLogo from '../assets/modit-logo.png'
 import { A3ProfileMenu } from '../auth/A3ProfileMenu'
+import { ApplicantNotifications } from '../auth/ApplicantNotifications'
 import { useSessionUser } from '../store/sessionStore'
 import './components.css'
 
@@ -36,15 +37,15 @@ export function MainNavigation({ activePage, onNavigate }: { activePage: MainPag
   </nav>
 }
 
-// 로그아웃 headers show the A3 프로필 메뉴 like the 담당자 header (name·email from the signed-in session when there is one);
-// other actions (개인 점검 [나가기]) keep the plain button.
+// 로그아웃 headers show the 알림 벨 and the A3 프로필 메뉴 like the 담당자 header (name·email from the signed-in session when there is one);
+// other actions (개인 점검 [나가기]) keep the plain button and no bell.
 export function AppHeader({ activePage, onNavigate, onLogout, profileName = '김청년', actionLabel = '로그아웃' }: { activePage: MainPage; onNavigate: (page: MainPage) => void; onLogout: () => void; profileName?: string; actionLabel?: string }) {
   const sessionUser = useSessionUser()
   return <header className="app-header">
     <BrandLogo onClick={() => onNavigate('home')} />
     <MainNavigation activePage={activePage} onNavigate={onNavigate} />
     {actionLabel === '로그아웃'
-      ? <A3ProfileMenu email={sessionUser?.email ?? ''} name={sessionUser?.name ?? profileName} onLogout={onLogout} roleLabel="신청자" />
+      ? <><ApplicantNotifications onOpen={() => onNavigate('check')} /><A3ProfileMenu email={sessionUser?.email ?? ''} name={sessionUser?.name ?? profileName} onLogout={onLogout} roleLabel="신청자" /></>
       : <button aria-label={`${profileName} ${actionLabel}`} className="app-header__profile" onClick={onLogout} title={actionLabel} type="button">{profileName} <span>{actionLabel}</span></button>}
   </header>
 }

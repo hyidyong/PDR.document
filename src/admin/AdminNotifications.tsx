@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAdmin } from '../store/AdminStore'
+import '../auth/notifyBell.css'
 import { BellIcon } from './adminIcons'
 import { formatShort } from './mockAdminData'
 import type { AdminEvent } from './mockAdminData'
@@ -53,18 +54,18 @@ export function AdminNotifications({ onOpenApplicant }: { onOpenApplicant: (appl
   }
   const choose = (applicantId: string) => { setOpen(false); onOpenApplicant(applicantId) }
 
-  return <div className="admin-notify" ref={ref}>
-    <button aria-expanded={open} aria-haspopup="menu" aria-label={unread ? '알림 (새 알림 있음)' : '알림'} className="admin-notify__bell" onClick={toggle} type="button">
+  return <div className="notify-bell" ref={ref}>
+    <button aria-expanded={open} aria-haspopup="menu" aria-label={unread ? '알림 (새 알림 있음)' : '알림'} className="notify-bell__bell" onClick={toggle} type="button">
       <BellIcon width={22} height={22} />
-      {unread && <span aria-hidden="true" className="admin-notify__dot" />}
+      {unread && <span aria-hidden="true" className="notify-bell__dot" />}
     </button>
-    {open && <div aria-label="알림" className="admin-notify__menu" role="menu">
-      <div className="admin-notify__head"><strong>알림</strong><span>최근 {notices.length}개</span></div>
+    {open && <div aria-label="알림" className="notify-bell__menu" role="menu">
+      <div className="notify-bell__head"><strong>알림</strong><span>최근 {notices.length}개</span></div>
       {notices.length === 0
-        ? <p className="admin-notify__empty">아직 알림이 없어요.</p>
-        : notices.map((notice) => <button className={`admin-notify__item ${isNew(notice, seenBefore) ? 'is-new' : ''}`} key={notice.key} onClick={() => choose(notice.applicantId)} role="menuitem" type="button">
-          <span className={`admin-notify__tone admin-notify__tone--${notice.tone}`} />
-          <span className="admin-notify__text"><span>{notice.text}</span><small>{formatShort(notice.at)}</small></span>
+        ? <p className="notify-bell__empty">아직 알림이 없어요.</p>
+        : notices.map((notice) => <button className={`notify-bell__item ${isNew(notice, seenBefore) ? 'is-new' : ''}`} key={notice.key} onClick={() => choose(notice.applicantId)} role="menuitem" type="button">
+          <span className={`notify-bell__tone notify-bell__tone--${notice.tone}`} />
+          <span className="notify-bell__text"><span>{notice.text}</span><small>{formatShort(notice.at)}</small></span>
         </button>)}
     </div>}
   </div>
