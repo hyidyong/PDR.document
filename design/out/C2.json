@@ -1,0 +1,770 @@
+{
+ "type": "frame",
+ "id": "OhNX7",
+ "name": "C2 기준 입력",
+ "clip": true,
+ "width": 1440,
+ "height": 1096,
+ "fill": "$bg",
+ "layout": "vertical",
+ "children": [
+  {
+   "id": "Q0csyo",
+   "type": "ref",
+   "ref": "eFvmT",
+   "name": "Top Nav",
+   "width": "fill_container",
+   "fill": "#FFFFFF00",
+   "descendants": {
+    "aroOD": {
+     "fill": "#00000000"
+    },
+    "txHeY": {
+     "fontWeight": "500",
+     "fill": "$text-primary"
+    },
+    "A4BoUV": {
+     "fill": "$lime"
+    },
+    "JMpMu": {
+     "fontWeight": "600",
+     "fill": "$text-primary"
+    },
+    "DJxPs": {
+     "fill": "#00000000"
+    },
+    "rAKZB": {
+     "fontWeight": "500",
+     "fill": "$text-primary"
+    },
+    "bpYOH": {
+     "fill": "#00000000"
+    },
+    "KBxrG": {
+     "fontWeight": "500",
+     "fill": "$text-primary"
+    }
+   }
+  },
+  {
+   "type": "frame",
+   "id": "zLAFb",
+   "name": "Content",
+   "width": "fill_container",
+   "height": "fill_container",
+   "layout": "vertical",
+   "children": [
+    {
+     "type": "frame",
+     "id": "Xemaq",
+     "name": "Page Header Bar",
+     "width": "fill_container",
+     "padding": [
+      32,
+      80,
+      24,
+      80
+     ],
+     "alignItems": "center",
+     "children": [
+      {
+       "type": "frame",
+       "id": "ZRwmD",
+       "name": "Page Header",
+       "layout": "vertical",
+       "gap": 8,
+       "children": [
+        {
+         "type": "text",
+         "id": "uLpKJ",
+         "name": "Page Title",
+         "fill": "$text-primary",
+         "content": "어떤 서류를 점검할까요?",
+         "fontFamily": "$font",
+         "fontSize": 32,
+         "fontWeight": "700",
+         "letterSpacing": -0.5
+        },
+        {
+         "type": "text",
+         "id": "FAzai",
+         "name": "Page Desc",
+         "fill": "$text-secondary",
+         "content": "공고문이나 받은 양식을 넣으면, 그 기준에 맞춰 내 서류를 확인해드려요.",
+         "fontFamily": "$font",
+         "fontSize": 14,
+         "fontWeight": "normal"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "type": "frame",
+     "id": "eaqy6",
+     "name": "Body",
+     "width": "fill_container",
+     "height": "fill_container",
+     "gap": 24,
+     "padding": [
+      0,
+      80,
+      32,
+      80
+     ],
+     "children": [
+      {
+       "type": "frame",
+       "id": "BmBW1",
+       "name": "Main",
+       "width": "fill_container",
+       "height": "fill_container",
+       "layout": "vertical",
+       "gap": 24,
+       "children": [
+        {
+         "type": "frame",
+         "id": "kfClm",
+         "name": "Input Cards",
+         "width": "fill_container",
+         "height": "fill_container",
+         "gap": 16,
+         "children": [
+          {
+           "type": "frame",
+           "id": "KhzXx",
+           "name": "Paste Card",
+           "width": "fill_container",
+           "height": "fill_container",
+           "fill": "$surface",
+           "cornerRadius": "$radius-card",
+           "stroke": "$border",
+           "strokeWidth": 1,
+           "layout": "vertical",
+           "gap": 24,
+           "padding": 32,
+           "children": [
+            {
+             "type": "frame",
+             "id": "Q4Zd9",
+             "name": "Head",
+             "width": "fill_container",
+             "gap": 16,
+             "alignItems": "center",
+             "children": [
+              {
+               "type": "frame",
+               "id": "FWiXI",
+               "name": "Icon Box",
+               "width": 48,
+               "height": 48,
+               "fill": "#00000000",
+               "cornerRadius": 12,
+               "justifyContent": "center",
+               "alignItems": "center",
+               "children": [
+                {
+                 "type": "icon",
+                 "id": "k7jgf",
+                 "name": "Icon",
+                 "width": 20,
+                 "height": 20,
+                 "icon": "clipboard-paste",
+                 "library": "lucide",
+                 "fill": "$text-secondary"
+                }
+               ]
+              },
+              {
+               "type": "frame",
+               "id": "QkOmE",
+               "name": "Text",
+               "width": "fill_container",
+               "layout": "vertical",
+               "gap": 4,
+               "children": [
+                {
+                 "type": "text",
+                 "id": "n4Z73",
+                 "name": "Title",
+                 "fill": "$text-primary",
+                 "content": "공고문·안내 메일 붙여넣기",
+                 "fontFamily": "$font",
+                 "fontSize": 16,
+                 "fontWeight": "700"
+                },
+                {
+                 "type": "text",
+                 "id": "m8KHh",
+                 "name": "Desc",
+                 "fill": "$text-secondary",
+                 "textGrowth": "fixed-width",
+                 "width": "fill_container",
+                 "content": "공고문, 안내 메일, 단톡방 공지를 그대로 붙여넣어 주세요",
+                 "lineHeight": 1.5,
+                 "fontFamily": "$font",
+                 "fontSize": 12,
+                 "fontWeight": "normal"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "type": "frame",
+             "id": "o1Tzfe",
+             "name": "Text Area",
+             "width": "fill_container",
+             "height": "fill_container",
+             "fill": "$surface",
+             "cornerRadius": 12,
+             "stroke": "$border",
+             "strokeWidth": 1,
+             "layout": "vertical",
+             "padding": 20,
+             "justifyContent": "space_between",
+             "children": [
+              {
+               "type": "text",
+               "id": "u7LIAv",
+               "name": "Placeholder",
+               "fill": "$text-tertiary",
+               "textGrowth": "fixed-width",
+               "width": "fill_container",
+               "content": "예) 연구 활동비 정산 서류는 계획서, 계약서, 영수증 첨부철을 11월 5일까지 학과 사무실로 제출해주세요...",
+               "lineHeight": 1.6,
+               "fontFamily": "$font",
+               "fontSize": 14,
+               "fontWeight": "normal"
+              },
+              {
+               "type": "frame",
+               "id": "eNumR",
+               "name": "Text Area Footer",
+               "width": "fill_container",
+               "justifyContent": "space_between",
+               "alignItems": "center",
+               "children": [
+                {
+                 "type": "frame",
+                 "id": "GHEuQ",
+                 "name": "Paste Chip",
+                 "fill": "$surface-muted",
+                 "cornerRadius": 999,
+                 "gap": 6,
+                 "padding": [
+                  6,
+                  12
+                 ],
+                 "alignItems": "center",
+                 "children": [
+                  {
+                   "type": "icon",
+                   "id": "Rrojf",
+                   "name": "Icon",
+                   "width": 14,
+                   "height": 14,
+                   "icon": "clipboard",
+                   "library": "lucide",
+                   "fill": "$text-secondary"
+                  },
+                  {
+                   "type": "text",
+                   "id": "HNPGW",
+                   "name": "Label",
+                   "fill": "$text-secondary",
+                   "content": "클립보드에서 붙여넣기",
+                   "fontFamily": "$font",
+                   "fontSize": 12,
+                   "fontWeight": "500"
+                  }
+                 ]
+                },
+                {
+                 "type": "text",
+                 "id": "iBerD",
+                 "name": "Counter",
+                 "fill": "$text-tertiary",
+                 "content": "0 / 5,000자",
+                 "fontFamily": "$font",
+                 "fontSize": 12,
+                 "fontWeight": "normal"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "type": "frame",
+           "id": "lI8pw",
+           "name": "Upload Card",
+           "width": 296,
+           "height": "fill_container",
+           "fill": "$surface",
+           "cornerRadius": "$radius-card",
+           "stroke": "$border",
+           "strokeWidth": 1,
+           "layout": "vertical",
+           "gap": 24,
+           "padding": 32,
+           "children": [
+            {
+             "type": "frame",
+             "id": "c9mMb2",
+             "name": "Head",
+             "width": "fill_container",
+             "gap": 16,
+             "alignItems": "center",
+             "children": [
+              {
+               "type": "frame",
+               "id": "bAJhE",
+               "name": "Icon Box",
+               "width": 48,
+               "height": 48,
+               "fill": "#00000000",
+               "cornerRadius": 12,
+               "justifyContent": "center",
+               "alignItems": "center",
+               "children": [
+                {
+                 "type": "icon",
+                 "id": "oFzZp",
+                 "name": "Icon",
+                 "width": 20,
+                 "height": 20,
+                 "icon": "file-up",
+                 "library": "lucide",
+                 "fill": "$text-secondary"
+                }
+               ]
+              },
+              {
+               "type": "frame",
+               "id": "MlvJt",
+               "name": "Text",
+               "width": "fill_container",
+               "layout": "vertical",
+               "gap": 4,
+               "children": [
+                {
+                 "type": "text",
+                 "id": "iAl4b",
+                 "name": "Title",
+                 "fill": "$text-primary",
+                 "content": "양식 파일 올리기",
+                 "fontFamily": "$font",
+                 "fontSize": 16,
+                 "fontWeight": "700"
+                },
+                {
+                 "type": "text",
+                 "id": "b6t0gF",
+                 "name": "Desc",
+                 "fill": "$text-secondary",
+                 "textGrowth": "fixed-width",
+                 "width": "fill_container",
+                 "content": "받은 신청서 양식이나 안내 파일",
+                 "lineHeight": 1.5,
+                 "fontFamily": "$font",
+                 "fontSize": 12,
+                 "fontWeight": "normal"
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "type": "frame",
+             "id": "FmJRB",
+             "name": "Drop Zone",
+             "width": "fill_container",
+             "height": "fill_container",
+             "fill": "$surface-muted",
+             "cornerRadius": 12,
+             "layout": "vertical",
+             "gap": 16,
+             "padding": 24,
+             "justifyContent": "center",
+             "alignItems": "center",
+             "children": [
+              {
+               "type": "frame",
+               "id": "rUfVh",
+               "name": "Upload Icon",
+               "width": 48,
+               "height": 48,
+               "fill": "#00000000",
+               "cornerRadius": 999,
+               "justifyContent": "center",
+               "alignItems": "center",
+               "children": [
+                {
+                 "type": "icon",
+                 "id": "Fy9eB",
+                 "name": "Icon",
+                 "width": 20,
+                 "height": 20,
+                 "icon": "upload",
+                 "library": "lucide",
+                 "fill": "$text-secondary"
+                }
+               ]
+              },
+              {
+               "type": "frame",
+               "id": "SRW1p",
+               "name": "Drop Text",
+               "width": "fill_container",
+               "layout": "vertical",
+               "gap": 4,
+               "alignItems": "center",
+               "children": [
+                {
+                 "type": "text",
+                 "id": "V9iUVy",
+                 "name": "Title",
+                 "fill": "$text-primary",
+                 "content": "여기에 파일을 끌어다 놓으세요",
+                 "fontFamily": "$font",
+                 "fontSize": 14,
+                 "fontWeight": "600"
+                },
+                {
+                 "type": "text",
+                 "id": "l2nkk5",
+                 "name": "Formats",
+                 "fill": "$text-tertiary",
+                 "textGrowth": "fixed-width",
+                 "width": "fill_container",
+                 "content": "한글(HWP·HWPX), 워드(DOCX), 엑셀(XLSX), PDF, 이미지(JPG·PNG)를 올릴 수 있어요",
+                 "lineHeight": 1.5,
+                 "textAlign": "center",
+                 "fontFamily": "$font",
+                 "fontSize": 12,
+                 "fontWeight": "normal"
+                }
+               ]
+              },
+              {
+               "id": "F4kFW5",
+               "type": "ref",
+               "ref": "Dwymt",
+               "name": "Select File",
+               "height": 40,
+               "padding": [
+                0,
+                16
+               ]
+              },
+              {
+               "type": "path",
+               "id": "e3fLFI",
+               "layoutPosition": "absolute",
+               "x": 0,
+               "y": 0,
+               "name": "Dashed Border",
+               "geometry": "M16 1l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l6 0m5 0l2 0m15 15l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m0 5l0 6m-15 15l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-6 0m-5 0l-2 0m-15-15l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m0-5l0-6m219-15a11 11 0 0 1 11 11m0 630a11 11 0 0 1-11 11m-208 0a11 11 0 0 1-11-11m0-630a11 11 0 0 1 11-11",
+               "viewBox": [
+                0,
+                0,
+                232,
+                654
+               ],
+               "width": 232,
+               "height": 654,
+               "stroke": "#B9BAC8",
+               "strokeWidth": 1.5,
+               "strokeLinecap": "round"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "type": "frame",
+         "id": "aTz4n",
+         "name": "Bottom Row",
+         "width": "fill_container",
+         "justifyContent": "space_between",
+         "alignItems": "center",
+         "children": [
+          {
+           "type": "frame",
+           "id": "oSPq7",
+           "name": "Hint",
+           "gap": 8,
+           "alignItems": "center",
+           "children": [
+            {
+             "type": "icon",
+             "id": "NopmT",
+             "name": "Icon",
+             "width": 16,
+             "height": 16,
+             "icon": "lightbulb",
+             "library": "lucide",
+             "fill": "$text-secondary"
+            },
+            {
+             "type": "text",
+             "id": "r7jWwx",
+             "name": "Text",
+             "fill": "$text-secondary",
+             "content": "하나만 넣어도 돼요. 둘 다 넣으면 더 정확해요.",
+             "fontFamily": "$font",
+             "fontSize": 14,
+             "fontWeight": "normal"
+            }
+           ]
+          },
+          {
+           "id": "UTcZp",
+           "type": "ref",
+           "ref": "PyWvd",
+           "name": "Make Checklist",
+           "descendants": {
+            "P0yMg": {
+             "content": "체크리스트 만들기"
+            },
+            "EXhS2": {
+             "icon": "list-checks"
+            }
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "type": "frame",
+       "id": "TYRQ1",
+       "name": "Aside",
+       "width": 320,
+       "height": "fill_container",
+       "layout": "vertical",
+       "gap": 16,
+       "children": [
+        {
+         "type": "frame",
+         "id": "AVzNG",
+         "name": "Recent Card",
+         "width": "fill_container",
+         "fill": "$surface",
+         "cornerRadius": "$radius-card",
+         "stroke": "$border",
+         "strokeWidth": 1,
+         "layout": "vertical",
+         "gap": 16,
+         "padding": 24,
+         "children": [
+          {
+           "type": "frame",
+           "id": "c4fg4b",
+           "name": "Head",
+           "width": "fill_container",
+           "justifyContent": "space_between",
+           "alignItems": "center",
+           "children": [
+            {
+             "type": "text",
+             "id": "Q10p5M",
+             "name": "Title",
+             "fill": "$text-primary",
+             "content": "최근 점검한 서류",
+             "fontFamily": "$font",
+             "fontSize": 16,
+             "fontWeight": "700"
+            },
+            {
+             "type": "text",
+             "id": "LznFP",
+             "name": "More",
+             "fill": "$text-secondary",
+             "content": "전체 보기",
+             "fontFamily": "$font",
+             "fontSize": 12,
+             "fontWeight": "500"
+            }
+           ]
+          },
+          {
+           "type": "frame",
+           "id": "ZpG8W",
+           "name": "List",
+           "width": "fill_container",
+           "layout": "vertical",
+           "gap": 8,
+           "children": [
+            {
+             "type": "frame",
+             "id": "YPAAa",
+             "name": "Recent 창업동아리 지원사업 정산",
+             "width": "fill_container",
+             "fill": "$surface-muted",
+             "cornerRadius": 12,
+             "gap": 12,
+             "padding": 16,
+             "alignItems": "center",
+             "children": [
+              {
+               "type": "frame",
+               "id": "ExIuH",
+               "name": "Text",
+               "width": "fill_container",
+               "layout": "vertical",
+               "gap": 6,
+               "children": [
+                {
+                 "type": "text",
+                 "id": "T8Uwfo",
+                 "name": "Name",
+                 "fill": "$text-primary",
+                 "textGrowth": "fixed-width",
+                 "width": "fill_container",
+                 "content": "창업동아리 지원사업 정산",
+                 "fontFamily": "$font",
+                 "fontSize": 14,
+                 "fontWeight": "600"
+                },
+                {
+                 "type": "text",
+                 "id": "RJQf5",
+                 "name": "Meta",
+                 "fill": "$text-tertiary",
+                 "content": "10월 28일 · 서류 3개",
+                 "fontFamily": "$font",
+                 "fontSize": 12,
+                 "fontWeight": "normal"
+                },
+                {
+                 "type": "frame",
+                 "id": "QKEV0",
+                 "name": "State",
+                 "fill": "$st-lavender-bg",
+                 "cornerRadius": 999,
+                 "padding": [
+                  2,
+                  8
+                 ],
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "Szkts",
+                   "name": "Label",
+                   "fill": "$st-lavender-fg",
+                   "content": "확인 필요 1",
+                   "fontFamily": "$font",
+                   "fontSize": 12,
+                   "fontWeight": "600"
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "type": "icon",
+               "id": "TLu1k",
+               "name": "Chevron",
+               "width": 16,
+               "height": 16,
+               "icon": "chevron-right",
+               "library": "lucide",
+               "fill": "$text-tertiary"
+              }
+             ]
+            },
+            {
+             "type": "frame",
+             "id": "JIXZc",
+             "name": "Recent 교내 연구 활동비 정산",
+             "width": "fill_container",
+             "fill": "$surface-muted",
+             "cornerRadius": 12,
+             "gap": 12,
+             "padding": 16,
+             "alignItems": "center",
+             "children": [
+              {
+               "type": "frame",
+               "id": "JpBUO",
+               "name": "Text",
+               "width": "fill_container",
+               "layout": "vertical",
+               "gap": 6,
+               "children": [
+                {
+                 "type": "text",
+                 "id": "fVovo",
+                 "name": "Name",
+                 "fill": "$text-primary",
+                 "textGrowth": "fixed-width",
+                 "width": "fill_container",
+                 "content": "교내 연구 활동비 정산",
+                 "fontFamily": "$font",
+                 "fontSize": 14,
+                 "fontWeight": "600"
+                },
+                {
+                 "type": "text",
+                 "id": "g78fQA",
+                 "name": "Meta",
+                 "fill": "$text-tertiary",
+                 "content": "10월 27일 · 서류 3개",
+                 "fontFamily": "$font",
+                 "fontSize": 12,
+                 "fontWeight": "normal"
+                },
+                {
+                 "type": "frame",
+                 "id": "j7QSO",
+                 "name": "State",
+                 "fill": "$st-lavender-bg",
+                 "cornerRadius": 999,
+                 "padding": [
+                  2,
+                  8
+                 ],
+                 "children": [
+                  {
+                   "type": "text",
+                   "id": "QgYWq",
+                   "name": "Label",
+                   "fill": "$st-lavender-fg",
+                   "content": "점검 중 2/3",
+                   "fontFamily": "$font",
+                   "fontSize": 12,
+                   "fontWeight": "600"
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "type": "icon",
+               "id": "I5fsdU",
+               "name": "Chevron",
+               "width": 16,
+               "height": 16,
+               "icon": "chevron-right",
+               "library": "lucide",
+               "fill": "$text-tertiary"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
