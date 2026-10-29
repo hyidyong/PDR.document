@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '../components/common'
-import { documentLabels } from './checkModel'
+import { collectIssueFindings, documentLabels } from './checkModel'
 import type { DocumentId, DocumentState, Finding } from './checkModel'
 
 const documentIds: DocumentId[] = ['plan', 'contract', 'receipts']
@@ -28,9 +28,7 @@ export function B4SubmissionConfirm({ documents, onCancel, onConfirm }: {
   onConfirm: () => void
 }) {
   const dialogRef = useRef<HTMLDivElement>(null)
-  const findings = [...(documents.contract?.findings ?? []), ...(documents.receipts?.findings ?? [])]
-    .filter((finding, index, all) => all.findIndex((candidate) => candidate.number === finding.number) === index)
-    .sort((left, right) => left.number - right.number)
+  const findings = collectIssueFindings(documents)
   const missingIds = documentIds.filter((id) => !documents[id])
   const items: ConfirmationItem[] = [
     ...findings.map((finding) => ({

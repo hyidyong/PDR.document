@@ -2,11 +2,15 @@ package com.modit.backend.service;
 
 import com.modit.backend.domain.Model.*;
 import java.util.List;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConditionalOnProperty(name="app.ai.provider", havingValue="mock", matchIfMissing=true)
 public class MockAiAnalysisService implements AiAnalysisService {
-    @Override public Result analyze(String requirementId, int version) {
+    @Override public Result analyze(DocumentVersion document) {
+        String requirementId = document.requirementId();
+        int version = document.version();
         if (version > 1 || requirementId.equals("plan")) return new Result(InspectionStatus.PASS, List.of(), "MOCK");
         if (requirementId.equals("contract")) return new Result(InspectionStatus.RECOMMEND, List.of(
                 new Finding("1", "구매자 서명이 누락되었습니다."),

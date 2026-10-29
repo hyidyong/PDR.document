@@ -10,6 +10,12 @@ services:
         value: memory
       - key: APP_STORAGE_PROVIDER
         value: supabase
+      - key: APP_AI_PROVIDER
+        value: edge
+      - key: SUPABASE_AI_FUNCTION
+        value: analyze-expense-hj-v2
+      - key: SUPABASE_CHECKLIST_FUNCTION
+        value: generate-document-checklist
       - key: SUPABASE_STORAGE_BUCKET
         value: expense-documents
       - key: SUPABASE_URL

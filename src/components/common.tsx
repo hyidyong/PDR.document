@@ -1,4 +1,4 @@
-import type { ReactNode, SVGProps } from 'react'
+import type { MouseEventHandler, ReactNode, SVGProps } from 'react'
 import moditLogo from '../assets/modit-logo.png'
 import './components.css'
 
@@ -47,7 +47,7 @@ export function TopNav({ activeItem = '나의 서류함', profileName = '김청�
 }
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'danger'
-export function Button({ children, variant = 'primary', size = 'medium', disabled = false, type = 'button', onClick }: { children: ReactNode; variant?: ButtonVariant; size?: 'small' | 'medium' | 'large'; disabled?: boolean; type?: 'button' | 'submit' | 'reset'; onClick?: () => void }) {
+export function Button({ children, variant = 'primary', size = 'medium', disabled = false, type = 'button', onClick }: { children: ReactNode; variant?: ButtonVariant; size?: 'small' | 'medium' | 'large'; disabled?: boolean; type?: 'button' | 'submit' | 'reset'; onClick?: MouseEventHandler<HTMLButtonElement> }) {
   return <button className={`button button--${variant} button--${size}`} disabled={disabled} onClick={onClick} type={type}>{children}</button>
 }
 
