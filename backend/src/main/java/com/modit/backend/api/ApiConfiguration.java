@@ -12,6 +12,6 @@ public class ApiConfiguration implements WebMvcConfigurer {
     public ApiConfiguration(@Value("${app.cors-origins:}") List<String> origins) { this.origins = origins; }
     @Override public void addCorsMappings(CorsRegistry registry) {
         if (!origins.isEmpty()) registry.addMapping("/api/**").allowedOrigins(origins.toArray(String[]::new))
-                .allowedMethods("GET", "POST", "OPTIONS").allowedHeaders("Content-Type", "X-Dev-Applicant-Id", "X-Dev-Role");
+                .allowedMethods("GET", "POST", "OPTIONS").allowedHeaders("Authorization", "Content-Type", "X-Dev-Role");
     }
 }

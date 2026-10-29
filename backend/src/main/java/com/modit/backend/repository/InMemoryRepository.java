@@ -3,11 +3,12 @@ package com.modit.backend.repository;
 import com.modit.backend.domain.Model.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.time.Instant;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class InMemoryRepository {
-    private final Map<String, Project> projects = Map.of("modit-2026", new Project("modit-2026", "MODIT 해커톤"));
+    private final Map<String, Project> projects = Map.of("modit-2026", new Project("modit-2026", "MODIT 해커톤", Instant.parse("2026-10-31T14:59:59Z")));
     private final Map<String, List<Requirement>> requirements = Map.of("modit-2026", List.of(
             new Requirement("plan", "사업계획서", true),
             new Requirement("contract", "계약서", true),

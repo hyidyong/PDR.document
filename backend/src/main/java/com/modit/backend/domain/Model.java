@@ -8,7 +8,7 @@ public final class Model {
     public enum SubmissionStatus { DRAFT, SUBMITTED, SUBMITTED_INCOMPLETE, NEEDS_REVISION, REVIEW_PENDING }
     public enum InspectionStatus { PASS, RECOMMEND, UNVERIFIABLE }
     public enum ApprovalStatus { PENDING, APPROVED, REJECTED }
-    public record Project(String id, String name) {}
+    public record Project(String id, String name, Instant deadlineAt) {}
     public record Requirement(String id, String name, boolean required) {}
     public record Applicant(String id, String projectId, String name, String studentId) {}
     public record DocumentVersion(String id, String requirementId, int version, String fileName,

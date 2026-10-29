@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class LocalFileStorage {
+@ConditionalOnProperty(name="app.storage.provider", havingValue="local")
+public class LocalFileStorage implements FileStorage {
     private final Path root;
     public LocalFileStorage(@Value("${app.storage-root}") String root) { this.root = Path.of(root).toAbsolutePath().normalize(); }
     public String save(String projectId, String applicantId, MultipartFile file) {

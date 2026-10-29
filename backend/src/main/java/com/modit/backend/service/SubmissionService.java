@@ -11,11 +11,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class SubmissionService {
-    private static final long MAX_BYTES = 20L * 1024 * 1024;
+    private static final long MAX_BYTES = 10L * 1024 * 1024;
+    private static final long MAX_AI_BYTES = 4L * 1024 * 1024;
     private final InMemoryRepository repository;
     private final AiAnalysisService ai;
-    private final LocalFileStorage storage;
-    public SubmissionService(InMemoryRepository repository, AiAnalysisService ai, LocalFileStorage storage) {
+    private final FileStorage storage;
+    public SubmissionService(InMemoryRepository repository, AiAnalysisService ai, FileStorage storage) {
         this.repository = repository; this.ai = ai; this.storage = storage;
     }
     public CaseFile caseFile(String projectId, String applicantId) { return repository.caseFile(projectId, applicantId); }
@@ -33,17 +34,13 @@ public class SubmissionService {
     }
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) throw new IllegalArgumentException("파일이 비어 있습니다.");
-        if (file.getSize() > MAX_BYTES) throw new IllegalArgumentException("파일은 20MB 이하여야 합니다.");
+        if (file.getSize() > MAX_BYTES) throw new IllegalArgumentException("파일은 10MB 이하여야 합니다.");
         String name = Optional.ofNullable(file.getOriginalFilename()).orElse("").toLowerCase(Locale.ROOT);
         String mime = Optional.ofNullable(file.getContentType()).orElse("").toLowerCase(Locale.ROOT);
         try {
             byte[] first = file.getInputStream().readNBytes(12);
             boolean pdf = name.endsWith(".pdf") && mime.equals("application/pdf") && starts(first, "%PDF-".getBytes());
-            boolean png = name.endsWith(".png") && mime.equals("image/png") && starts(first, new byte[]{(byte)137,80,78,71,13,10,26,10});
-            boolean jpg = (name.endsWith(".jpg") || name.endsWith(".jpeg")) && mime.equals("image/jpeg") && starts(first, new byte[]{(byte)255,(byte)216,(byte)255});
-            boolean gif = name.endsWith(".gif") && mime.equals("image/gif") && (starts(first, "GIF87a".getBytes()) || starts(first, "GIF89a".getBytes()));
-            boolean webp = name.endsWith(".webp") && mime.equals("image/webp") && starts(first, "RIFF".getBytes()) && first.length >= 12 && Arrays.equals(Arrays.copyOfRange(first,8,12), "WEBP".getBytes());
-            if (!(pdf || png || jpg || gif || webp)) throw new IllegalArgumentException("PDF, PNG, JPEG, GIF, WebP 형식의 정상 파일만 업로드할 수 있습니다.");
+            if (!pdf) throw new IllegalArgumentException("정상적인 PDF 파일만 업로드할 수 있습니다.");
         } catch (IOException e) { throw new IllegalArgumentException("파일을 읽을 수 없습니다.", e); }
     }
     private boolean starts(byte[] value, byte[] prefix) { return value.length >= prefix.length && Arrays.equals(Arrays.copyOf(value,prefix.length),prefix); }
@@ -66,7 +63,11 @@ public class SubmissionService {
         }
     }
     private Inspection inspectLocked(CaseFile c, DocumentVersion doc) {
-        AiAnalysisService.Result result = ai.analyze(doc.requirementId(), doc.version());
+        AiAnalysisService.Result result = doc.size() > MAX_AI_BYTES
+                ? new AiAnalysisService.Result(InspectionStatus.UNVERIFIABLE,
+                        List.of(new Finding("size-limit", "4MB를 초과한 PDF는 AI 분석을 진행할 수 없습니다.")),
+                        "SIZE_LIMIT")
+                : ai.analyze(doc.requirementId(), doc.version());
         Inspection inspection = new Inspection(UUID.randomUUID().toString(), doc.id(), doc.requirementId(), doc.version(),
                 result.status(), result.source(), result.findings(), Instant.now());
         c.inspections.add(inspection);

@@ -22,7 +22,12 @@ public class ApplicantController {
     @GetMapping public Object project(@PathVariable String projectId) { return repository.project(projectId); }
     @GetMapping("/requirements") public Object requirements(@PathVariable String projectId) { return service.requirements(projectId); }
     @PostMapping("/applicants/verify") public ApplicantView verify(@PathVariable String projectId, @Valid @RequestBody VerifyRequest request) {
-        access.requireMockAuth(); return ApplicantView.of(repository.verify(projectId, request.name(), request.studentId()));
+        ApplicantView applicant = ApplicantView.of(repository.verify(projectId, request.name(), request.studentId()));
+        access.applicant(applicant.id());
+        return applicant;
+    }
+    @GetMapping("/applicants/me") public ApplicantView currentApplicant(@PathVariable String projectId) {
+        return ApplicantView.of(repository.applicant(projectId, access.applicantId()));
     }
     @GetMapping("/applicants/{applicantId}") public ApplicantView applicant(@PathVariable String projectId, @PathVariable String applicantId) {
         access.applicant(applicantId); return ApplicantView.of(repository.applicant(projectId, applicantId));

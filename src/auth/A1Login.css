@@ -1,0 +1,75 @@
+.a1-screen { background: var(--color-bg); color: var(--color-text-primary); display: flex; flex-direction: column; min-height: 100vh; }
+.a1-header { align-items: center; display: flex; height: 72px; padding: 0 80px; }
+.a1-body { align-items: stretch; display: flex; flex: 1; gap: 80px; margin: 0 auto; max-width: 1440px; padding: 8px 80px 80px; width: 100%; }
+
+.a1-brand { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); display: flex; flex: 1; flex-direction: column; justify-content: space-between; min-width: 0; padding: 64px; }
+.a1-copy { display: flex; flex-direction: column; gap: 20px; }
+.a1-copy h1 { display: flex; flex-direction: column; font-size: 48px; font-weight: 800; gap: 4px; line-height: 1.3; margin: 0; }
+.a1-copy h1 em { color: var(--color-brand); font-style: normal; }
+.a1-copy p { color: var(--color-text-secondary); font-size: 16px; line-height: 1.6; margin: 0; }
+.a1-art { align-items: center; align-self: center; display: flex; height: 400px; justify-content: center; max-width: 520px; position: relative; width: 100%; }
+.a1-art__sheet { align-items: center; background: var(--color-lavender); border-radius: 50%; color: var(--color-brand); display: flex; height: 240px; justify-content: center; width: 240px; }
+.a1-art__chip { align-items: center; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-pill); box-shadow: 0 8px 24px #2a2c4014; display: inline-flex; font-size: 13px; font-weight: 600; gap: 6px; padding: 10px 14px; position: absolute; }
+.a1-art__chip--pass { color: var(--color-pass); left: 6%; top: 22%; }
+.a1-art__chip--error { color: var(--color-error); bottom: 22%; right: 6%; }
+
+.a1-column { display: flex; flex: 0 0 440px; flex-direction: column; gap: 20px; justify-content: center; }
+.a1-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); display: flex; flex-direction: column; gap: 24px; padding: 40px; }
+.a1-card .button--large { min-height: 52px; width: 100%; }
+.a1-card__head h2 { font-size: 20px; font-weight: 700; margin: 0 0 8px; }
+.a1-card__head p { color: var(--color-text-secondary); font-size: 14px; margin: 0; }
+.a1-fields { display: flex; flex-direction: column; gap: 16px; }
+.a1-field { display: flex; flex-direction: column; gap: 8px; }
+.a1-field > span:first-child { font-size: 14px; font-weight: 600; }
+.a1-input { align-items: center; border: 1px solid var(--color-border); border-radius: 12px; color: var(--color-text-secondary); display: flex; gap: 8px; height: 48px; padding: 0 16px; }
+.a1-input:focus-within { border-color: var(--color-brand); }
+.a1-input input { background: none; border: 0; color: var(--color-text-primary); flex: 1; font-size: 14px; min-width: 0; outline: none; }
+.a1-input input::placeholder { color: var(--color-text-secondary); }
+.a1-input svg { flex: 0 0 18px; height: 18px; width: 18px; }
+.a1-options { align-items: center; display: flex; justify-content: space-between; }
+.a1-keep { align-items: center; color: var(--color-text-secondary); display: inline-flex; font-size: 12px; font-weight: 500; gap: 8px; }
+.a1-keep input { accent-color: var(--color-brand); height: 18px; margin: 0; width: 18px; }
+.a1-text-button { background: none; border: 0; color: var(--color-text-secondary); font-size: 12px; font-weight: 500; padding: 0; }
+.a1-text-button:hover { color: var(--color-brand); }
+.a1-text-button--brand { color: var(--color-brand); font-size: 14px; font-weight: 700; }
+.a1-notice { background: var(--color-lavender); border-radius: 12px; color: var(--color-brand); font-size: 13px; font-weight: 600; margin: 0; padding: 12px 16px; text-align: center; }
+.a1-signup { align-items: center; color: var(--color-text-secondary); display: flex; font-size: 14px; gap: 8px; justify-content: center; margin-top: -8px; }
+
+.a1-demo { display: flex; flex-direction: column; gap: 12px; }
+.a1-demo__divider { align-items: center; color: var(--color-text-secondary); display: flex; font-size: 12px; font-weight: 600; gap: 12px; margin-bottom: 4px; }
+.a1-demo__divider::before, .a1-demo__divider::after { background: var(--color-border); content: ''; flex: 1; height: 1px; }
+.a1-demo-button { align-items: center; border: 1px solid transparent; border-radius: var(--radius-button); display: flex; gap: 14px; min-height: 72px; padding: 14px 18px; text-align: left; transition: transform .15s ease, background .15s ease; width: 100%; }
+.a1-demo-button:hover { transform: translateY(-1px); }
+.a1-demo-button:focus-visible, .a1-solo-link:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+.a1-demo-button > svg { flex: 0 0 20px; height: 20px; width: 20px; }
+.a1-demo-button--applicant { background: var(--color-brand); color: #fff; }
+.a1-demo-button--applicant:hover { background: var(--color-brand-hover); }
+.a1-demo-button--admin { background: var(--color-text-primary); color: #fff; }
+.a1-demo-button--admin:hover { background: #1f2133; }
+.a1-demo-button__icon { align-items: center; background: #ffffff26; border-radius: 10px; display: inline-flex; flex: 0 0 40px; height: 40px; justify-content: center; }
+.a1-demo-button__icon svg { height: 20px; width: 20px; }
+.a1-demo-button__text { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; }
+.a1-demo-button__text strong { font-size: 16px; font-weight: 700; }
+.a1-demo-button__text small { font-size: 12px; opacity: .8; }
+.a1-solo-link { align-items: center; align-self: center; background: none; border: 0; color: var(--color-brand); display: inline-flex; font-size: 14px; font-weight: 700; gap: 6px; margin-top: 4px; padding: 6px 4px; }
+.a1-solo-link svg { height: 16px; width: 16px; }
+.a1-solo-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.a1-link-notice { align-items: flex-start; color: var(--color-text-secondary); display: flex; font-size: 12px; gap: 8px; line-height: 1.5; margin: 0; padding: 0 8px; }
+.a1-link-notice svg { flex: 0 0 14px; height: 14px; margin-top: 2px; width: 14px; }
+
+@media (max-width: 1100px) {
+  .a1-body { gap: 32px; padding: 8px 32px 48px; }
+  .a1-brand { padding: 40px; }
+  .a1-copy h1 { font-size: 36px; }
+}
+@media (max-width: 860px) {
+  .a1-header { padding: 0 16px; }
+  .a1-body { flex-direction: column; padding: 8px 16px 40px; }
+  .a1-brand { padding: 32px 24px; }
+  .a1-copy h1 { font-size: 30px; }
+  .a1-art { height: 220px; }
+  .a1-art__sheet { height: 160px; width: 160px; }
+  .a1-art__sheet svg { height: 64px; width: 64px; }
+  .a1-column { flex-basis: auto; }
+  .a1-card { padding: 28px 20px; }
+}
