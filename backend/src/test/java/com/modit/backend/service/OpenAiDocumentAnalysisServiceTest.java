@@ -22,6 +22,20 @@ class OpenAiDocumentAnalysisServiceTest {
         @Override public Resource read(String key) { return new ByteArrayResource("%PDF-1.4\ntest".getBytes()); }
     };
 
+    @Test void missingApiKeyIsAnOperationalFailureForBothDocumentTypes() {
+        for (String key : new String[] {"", "   "}) {
+            var service = new OpenAiDocumentAnalysisService(storage, mapper, key, "gpt-4.1-mini");
+            for (String type : new String[] {"plan", "contract"}) {
+                var result = service.analyze(document(type));
+                assertEquals(InspectionStatus.UNVERIFIABLE, result.status());
+                assertEquals("OPENAI_ERROR", result.source());
+                assertEquals("OPENAI_ERROR", result.findings().getFirst().id());
+                assertTrue(result.findings().getFirst().message().contains("서류 오류가 아닙니다"));
+                assertTrue(result.findings().getFirst().message().contains("서버 설정 확인"));
+            }
+        }
+    }
+
     @Test void mapsBusinessPlanRevisionAndKeepsBRuleIds() throws Exception {
         var service = service(review("business_plan", "B", "B02", "fail", "revision"));
 
