@@ -35,6 +35,7 @@ function App() {
   }
   if (screen === 'login') return <A1Login
     onAuthenticated={(projectDeadline) => { setDeadlineAt(resolveProjectDeadline(projectDeadline)); setScreen('role') }}
+    onApplicantDemo={async (projectDeadline) => { setDeadlineAt(resolveProjectDeadline(projectDeadline)); await chooseRole('applicant') }}
     // 담당자 데모 runs on mock data without a login; the query is kept so /?reset=1 still resets it.
     onAdminDemo={() => { setDeadlineAt(DEFAULT_PROJECT_DEADLINE); setScreen('admin'); window.history.replaceState(null, '', `/admin${window.location.search}`) }}
     onPersonalCheck={() => setScreen('personal')}

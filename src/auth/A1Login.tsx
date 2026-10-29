@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { AuthError, login } from '../api/authApi'
+import { AuthError, login, logout } from '../api/authApi'
 import { BrandLogo, Button, CheckIcon, FileIcon } from '../components/common'
 import { setSessionUser } from '../store/sessionStore'
 import { A2RoleSelect } from './A2RoleSelect'
@@ -28,9 +28,15 @@ function ArrowRightIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
 }
 
+// [사용자 데모] signs in with this 신청자 account from .env; the button is hidden when either value is empty.
+const demoApplicant = { email: import.meta.env.VITE_DEMO_APPLICANT_EMAIL ?? '', password: import.meta.env.VITE_DEMO_APPLICANT_PASSWORD ?? '' }
+const hasDemoApplicant = Boolean(demoApplicant.email && demoApplicant.password)
+
 // onAuthenticated leads to the A2 역할 선택 (App); onAdminDemo opens the 담당자 screens on mock data without logging in.
-export function A1Login({ onAuthenticated, onAdminDemo, onPersonalCheck }: {
+// onApplicantDemo skips A2 and opens the 신청자 서류 점검 (App runs chooseApplicant); it throws if that fails.
+export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPersonalCheck }: {
   onAuthenticated: (deadlineAt?: string | null) => void
+  onApplicantDemo: (deadlineAt?: string | null) => Promise<void>
   onAdminDemo: () => void
   onPersonalCheck: () => void
 }) {
@@ -54,6 +60,21 @@ export function A1Login({ onAuthenticated, onAdminDemo, onPersonalCheck }: {
       if (error instanceof AuthError) setErrors({ [error.field]: error.message })
       else setNotice(error instanceof Error ? error.message : '로그인하지 못했습니다.')
     } finally { setIsSubmitting(false) }
+  }
+
+  const startApplicantDemo = async () => {
+    setErrors({})
+    setNotice('')
+    setIsSubmitting(true)
+    try {
+      const result = await login(demoApplicant.email, demoApplicant.password)
+      setSessionUser(result.user)
+      await onApplicantDemo(result.project.deadlineAt)
+    } catch (error) {
+      void logout()
+      setNotice(error instanceof Error ? error.message : '사용자 데모를 열지 못했습니다.')
+      setIsSubmitting(false)
+    }
   }
 
   if (view === 'signup') return <A2RoleSelect onLogin={() => setView('login')} />
@@ -92,11 +113,18 @@ export function A1Login({ onAuthenticated, onAdminDemo, onPersonalCheck }: {
 
           <div className="a1-demo">
             <div className="a1-demo__divider"><span>다른 이용 방법</span></div>
-            <button className="a1-demo-button a1-demo-button--admin" onClick={onAdminDemo} type="button">
-              <span className="a1-demo-button__icon"><BriefcaseIcon /></span>
-              <span className="a1-demo-button__text"><strong>담당자 데모</strong><small>한국대학교 창업지원단 · 제출 현황 확인</small></span>
-              <ArrowRightIcon />
-            </button>
+            <div className={hasDemoApplicant ? 'a1-demo__row' : undefined}>
+              {hasDemoApplicant && <button className="a1-demo-button a1-demo-button--applicant" disabled={isSubmitting} onClick={() => void startApplicantDemo()} type="button">
+                <span className="a1-demo-button__icon"><FileIcon /></span>
+                <span className="a1-demo-button__text"><strong>사용자 데모</strong><small>신청자 · 서류 점검</small></span>
+                <ArrowRightIcon />
+              </button>}
+              <button className="a1-demo-button a1-demo-button--admin" disabled={isSubmitting} onClick={onAdminDemo} type="button">
+                <span className="a1-demo-button__icon"><BriefcaseIcon /></span>
+                <span className="a1-demo-button__text"><strong>담당자 데모</strong><small>한국대학교 창업지원단 · 제출 현황 확인</small></span>
+                <ArrowRightIcon />
+              </button>
+            </div>
             <button className="a1-solo-link" onClick={onPersonalCheck} type="button">기관 링크 없이 혼자 점검하기 <ArrowRightIcon /></button>
           </div>
         </form>
