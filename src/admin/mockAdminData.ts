@@ -93,6 +93,16 @@ export const mockApplicants: AdminApplicant[] = rows.map(([name, studentId, stat
 
 export const clubNames: Record<string, string> = Object.fromEntries(rows.map((row, index) => [toId(index), row[6]]))
 
+// D1 담당자 홈 only: the two other 진행 중 프로젝트 from the design. They have no screens, so their counts are fixed.
+export type OtherProject = { name: string; org: string; total: number; submitted: number; pending: number; revision: number; approved: number; deadlineAt: string }
+export const otherProjects: OtherProject[] = [
+  { name: '교내 연구 활동비 정산', org: '연구처', total: 15, submitted: 8, pending: 3, revision: 0, approved: 5, deadlineAt: '2026-11-05T23:59:59+09:00' },
+  { name: '해외봉사 활동 계획서', org: '국제교류처', total: 20, submitted: 5, pending: 0, revision: 0, approved: 5, deadlineAt: '2026-11-10T23:59:59+09:00' },
+]
+export const adminProjectOrg = '창업지원단'
+// 검토 대기 on D1: submitted and waiting for the 담당자 (보완 필요 and 승인 are counted separately).
+export const pendingStatuses: AdminStatus[] = ['SUBMITTED', 'SUBMITTED_INCOMPLETE', 'REVIEW_PENDING']
+
 export const adminDocuments = ['사업계획서', '물품매매계약서', '영수증 첨부철'] as const
 export type AdminDocument = typeof adminDocuments[number]
 

@@ -3,7 +3,10 @@ import { getApplicantDocuments } from '../api/adminApi'
 import type { ApplicantDocuments } from '../api/adminApi'
 import { AdminProvider, useAdmin } from '../store/AdminStore'
 import { AdminConfirmDialog } from './AdminConfirmDialog'
+import { ReadyNotice } from '../auth/ReadyNotice'
 import { AdminHeader } from './AdminHeader'
+import type { AdminMenu } from './AdminHeader'
+import { D1Home } from './D1Home'
 import { D5Dashboard } from './D5Dashboard'
 import type { DashboardFilter, DashboardSort } from './D5Dashboard'
 import { D6ApplicantDetail } from './D6ApplicantDetail'
@@ -25,6 +28,8 @@ export function AdminApp({ deadlineAt, onExit, onSwitchRole }: { deadlineAt?: st
 
 function AdminScreens({ deadlineAt, onExit, onSwitchRole }: { deadlineAt?: string | null; onExit: () => void; onSwitchRole?: () => void }) {
   const { loading, project: storedProject, applicants, eventsById, requestRevision, approve, cancelApproval } = useAdmin()
+  // 홈 = D1, 프로젝트 = D5 (D6~D9 open on top of 프로젝트).
+  const [menu, setMenu] = useState<AdminMenu>('home')
   const [filter, setFilter] = useState<DashboardFilter>({ tab: 'ALL', query: '', sort: 'recent', page: 1 })
   // Kept here so the 체크박스 선택 survives a trip to D6 and back.
   const [selected, setSelected] = useState<Set<string>>(() => new Set())
@@ -50,6 +55,9 @@ function AdminScreens({ deadlineAt, onExit, onSwitchRole }: { deadlineAt?: strin
   }, [currentId])
 
   const goHome = () => { setOpenId(null); setConfirmingApproval(false) }
+  const openMenu = (next: AdminMenu) => { goHome(); setMenu(next) }
+  const openProject = (tab: DashboardFilter['tab'] = 'ALL') => { openMenu('project'); setFilter({ ...filter, tab, page: 1 }) }
+  const openApplicant = (applicantId: string) => { setMenu('project'); setOpenId(applicantId) }
   const move = (step: number) => setOpenId(sorted[(index + step + sorted.length) % sorted.length].applicantId)
   const confirmApproval = async () => {
     if (!current) return
@@ -75,13 +83,16 @@ function AdminScreens({ deadlineAt, onExit, onSwitchRole }: { deadlineAt?: strin
   }
 
   return <div className="admin-app">
-    <AdminHeader onExit={onExit} onHome={goHome} onSwitchRole={onSwitchRole} />
+    <AdminHeader active={menu} onExit={onExit} onNavigate={openMenu} onSwitchRole={onSwitchRole} />
+    <ReadyNotice />
     <div className="admin-integration-notice" role="status"><strong>디자인 미리보기</strong> 관리자 API가 아직 연결되지 않아 아래 현황·보완 요청·승인 동작은 mock 데이터로만 표시됩니다.</div>
     {loading || !project
       ? null
       : current
         ? detail()
-        : <D5Dashboard applicants={sorted} filter={filter} onDownload={() => setDownloadOpen(true)} onFilterChange={setFilter} onOpen={setOpenId} onSelectedChange={setSelected} project={project} selected={selected} />}
+        : menu === 'home'
+          ? <D1Home applicants={applicants} onOpenApplicant={openApplicant} onOpenProject={openProject} project={project} />
+          : <D5Dashboard applicants={sorted} filter={filter} onDownload={() => setDownloadOpen(true)} onFilterChange={setFilter} onOpen={setOpenId} onSelectedChange={setSelected} project={project} selected={selected} />}
     {downloadOpen && project && <D8DownloadModal applicants={sorted} onClose={() => setDownloadOpen(false)} project={project} selected={selected} />}
     {confirmingApproval && current && <AdminConfirmDialog
       busy={approving}
