@@ -15,6 +15,9 @@ import type { DashboardFilter, DashboardSort } from './D5Dashboard'
 import { D6ApplicantDetail } from './D6ApplicantDetail'
 import { D8DownloadModal } from './D8DownloadModal'
 import { D9Approved } from './D9Approved'
+import { ProjectWizard } from './ProjectWizard'
+import { emptyDraft, toProjectInput } from './projectDraft'
+import type { WizardStep } from './projectDraft'
 import type { AdminApplicant } from './mockAdminData'
 import '../screens/DocumentCheckFlow.css'
 import './admin.css'
@@ -32,12 +35,15 @@ export function AdminApp({ deadlineAt, onExit }: { deadlineAt?: string | null; o
 }
 
 function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onExit: () => void }) {
-  const { loading, project: storedProject, applicants, eventsById, requestRevision, approve, cancelApproval } = useAdmin()
+  const { loading, project: storedProject, applicants, eventsById, createdProjects, createProject, requestRevision, approve, cancelApproval } = useAdmin()
   // 홈 = D1, 프로젝트·신청자 = D5 (D6~D9 open on top of it; the header keeps the menu it came from), 서류 관리 = D10.
   // menu, the open 신청자 and D7 are recorded in the browser history (src/store/navHistory.ts); entering by 뒤로가기 restores them.
   const [initialNav] = useState(() => currentNav()?.admin ?? defaultAdminNav)
   const [menu, setMenu] = useState<AdminMenu>(initialNav.menu)
   const [revisionOpen, setRevisionOpen] = useState(initialNav.revision)
+  // 새 프로젝트 만들기: the step is in the history; the draft stays here so [이전]/[다음] and 뒤로가기 keep what was typed.
+  const [wizardStep, setWizardStep] = useState<WizardStep | undefined>(initialNav.wizardStep)
+  const [draft, setDraft] = useState(emptyDraft)
   const [filter, setFilter] = useState<DashboardFilter>({ tab: 'ALL', query: '', sort: 'recent', page: 1 })
   // Kept here so the 체크박스 선택 survives a trip to D6 and back.
   const [selected, setSelected] = useState<Set<string>>(() => new Set())
@@ -62,7 +68,7 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
     return () => { active = false }
   }, [currentId])
 
-  const show = (next: AdminNav) => { setMenu(next.menu); setOpenId(next.openId); setRevisionOpen(next.revision); setConfirmingApproval(false); setDownloadOpen(false) }
+  const show = (next: AdminNav) => { setMenu(next.menu); setOpenId(next.openId); setRevisionOpen(next.revision); setWizardStep(next.wizardStep); setConfirmingApproval(false); setDownloadOpen(false) }
   const go = (next: AdminNav) => { show(next); pushNav({ ...(currentNav() ?? { screen: 'admin' }), admin: next }) }
   usePopNav((state) => { if (state?.screen === 'admin') show(state.admin ?? defaultAdminNav) })
 
@@ -82,6 +88,17 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
     else if (currentNav()?.admin?.revision) window.history.back()
     else setRevisionOpen(false)
   }
+  // A finished draft is not reopened: [새 프로젝트 만들기] starts empty again.
+  const openWizard = () => { if (draft.created) setDraft(emptyDraft()); go({ menu: 'project', openId: null, revision: false, wizardStep: 1 }) }
+  // [다음] pushes the next step; [이전], the stepper and [취소] go back through those entries, so 뒤로가기 matches [이전].
+  const wizardTo = (step: WizardStep) => go({ menu, openId: null, revision: false, wizardStep: step })
+  const wizardBack = (step: WizardStep | 0) => window.history.go(step - (wizardStep ?? 1))
+  const createFromDraft = async () => {
+    const created = await createProject(toProjectInput(draft))
+    setDraft({ ...draft, created })
+    wizardTo(4)
+  }
+  const finishWizard = () => { setDraft(emptyDraft()); openMenu('home') }
   const confirmApproval = async () => {
     if (!current) return
     setApproving(true)
@@ -111,10 +128,12 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
     {SHOW_MOCK_BANNER && <div className="admin-integration-notice" role="status"><strong>디자인 미리보기</strong> 관리자 API가 아직 연결되지 않아 아래 현황·보완 요청·승인 동작은 mock 데이터로만 표시됩니다.</div>}
     {loading || !project
       ? null
+      : wizardStep
+        ? <ProjectWizard draft={draft} onBack={wizardBack} onCreate={createFromDraft} onDone={finishWizard} onDraftChange={setDraft} onNext={wizardTo} step={wizardStep} />
       : current
         ? detail()
         : menu === 'home'
-          ? <D1Home applicants={applicants} onOpenApplicant={openApplicant} onOpenProject={openProject} project={project} />
+          ? <D1Home applicants={applicants} createdProjects={createdProjects} onCreateProject={openWizard} onOpenApplicant={openApplicant} onOpenProject={openProject} project={project} />
           : menu === 'documents'
             ? <D10DocumentStatus applicants={applicants} onOpenProject={() => openProject()} project={project} />
             : <D5Dashboard applicants={sorted} filter={filter} onDownload={() => setDownloadOpen(true)} onFilterChange={setFilter} onOpen={openApplicant} onSelectedChange={setSelected} project={project} selected={selected} />}

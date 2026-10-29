@@ -23,3 +23,10 @@ export function CloseIcon(props: IconProps) { return <Icon {...props}><path d="M
 export function FolderIcon(props: IconProps) { return <Icon {...props}><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-10Z" {...stroke} /></Icon> }
 export function ArchiveIcon(props: IconProps) { return <Icon {...props}><path d="M6.5 3.5h7l4 4v13h-11v-17Z" {...stroke} /><path d="M10 4v2m0 2v2m0 2v2m-1 1.5h2v3H9v-3Z" {...stroke} /></Icon> }
 export function EllipsisIcon(props: IconProps) { return <Icon {...props}><path d="M6 12h.01M12 12h.01M18 12h.01" {...stroke} strokeWidth={2.6} /></Icon> }
+export function TrashIcon(props: IconProps) { return <Icon {...props}><path d="M4.5 7h15M10 11v5m4-5v5M6.5 7l.8 11.5a1.5 1.5 0 0 0 1.5 1.5h6.4a1.5 1.5 0 0 0 1.5-1.5L17.5 7M9.5 7V4.5h5V7" {...stroke} /></Icon> }
+export function PlusIcon(props: IconProps) { return <Icon {...props}><path d="M12 5v14M5 12h14" {...stroke} /></Icon> }
+export function CopyIcon(props: IconProps) { return <Icon {...props}><rect height="11" rx="2" width="11" x="9" y="9" {...stroke} /><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3" {...stroke} /></Icon> }
+export function UsersIcon(props: IconProps) { return <Icon {...props}><circle cx="9" cy="8.5" r="3.5" {...stroke} /><path d="M3 19.5a6 6 0 0 1 12 0M16 5.2a3.5 3.5 0 0 1 0 6.6M18 14.2a6 6 0 0 1 3 5.3" {...stroke} /></Icon> }
+export function CalendarIcon(props: IconProps) { return <Icon {...props}><rect height="15" rx="2" width="17" x="3.5" y="5" {...stroke} /><path d="M3.5 10h17M8 3v4m8-4v4" {...stroke} /></Icon> }
+export function MailIcon(props: IconProps) { return <Icon {...props}><rect height="14" rx="2" width="18" x="3" y="5" {...stroke} /><path d="m4 7 8 6 8-6" {...stroke} /></Icon> }
+export function ClipboardIcon(props: IconProps) { return <Icon {...props}><path d="M9 4.5h6v3H9v-3Z" {...stroke} /><path d="M15 5.5h2.5a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19V7a1.5 1.5 0 0 1 1.5-1.5H9" {...stroke} /></Icon> }

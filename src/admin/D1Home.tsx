@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { AdminProject } from '../api/adminApi'
+import type { AdminProject, CreatedProject } from '../api/adminApi'
 import { showNotice } from '../store/noticeStore'
 import { Button, CheckIcon, ChevronDownIcon, ChevronRightIcon, StatusBadge } from '../components/common'
 import { ArrowRightIcon, ClockIcon, EllipsisIcon, FolderIcon, MessageIcon } from './adminIcons'
@@ -43,8 +43,11 @@ function AiSummary({ applicant }: { applicant: AdminApplicant }) {
 
 // D1 담당자 홈. The 2026 창업동아리 numbers come from the live mock state (so 보완 요청·승인 on D6~D9 show up here);
 // the other two projects are fixed design data and only show a 준비 중 notice when opened.
-export function D1Home({ project, applicants, onOpenProject, onOpenApplicant }: {
+// createdProjects (새 프로젝트 만들기) are listed right after 2026 창업동아리, newest first; they have no screens yet.
+export function D1Home({ project, applicants, createdProjects, onCreateProject, onOpenProject, onOpenApplicant }: {
   project: AdminProject
+  createdProjects: CreatedProject[]
+  onCreateProject: () => void
   applicants: AdminApplicant[]
   onOpenProject: (tab?: 'ALL' | AdminStatus) => void
   onOpenApplicant: (applicantId: string) => void
@@ -55,7 +58,8 @@ export function D1Home({ project, applicants, onOpenProject, onOpenApplicant }: 
     key: project.id, name: project.name, org: adminProjectOrg, total: applicants.length, deadlineAt: project.deadlineAt ?? '',
     submitted: applicants.filter((applicant) => applicant.status !== 'DRAFT').length, pending: count(pendingStatuses), onOpen: () => onOpenProject(),
   }
-  const projects: ProjectRow[] = [main, ...otherProjects.map((other) => ({ ...other, key: other.name, onOpen: () => showNotice() }))]
+  const created: ProjectRow[] = [...createdProjects].reverse().map((item) => ({ key: item.id, name: item.name, org: item.org, total: item.rosterCount, submitted: 0, pending: 0, deadlineAt: item.deadlineAt, onOpen: () => showNotice('새로 만든 프로젝트의 현황 화면은 준비 중이에요') }))
+  const projects: ProjectRow[] = [main, ...created, ...otherProjects.map((other) => ({ ...other, key: other.name, onOpen: () => showNotice() }))]
   const pending = main.pending + otherProjects.reduce((sum, other) => sum + other.pending, 0)
   const revision = count(['NEEDS_REVISION']) + otherProjects.reduce((sum, other) => sum + other.revision, 0)
   const approved = count(['APPROVED']) + otherProjects.reduce((sum, other) => sum + other.approved, 0)
@@ -75,7 +79,7 @@ export function D1Home({ project, applicants, onOpenProject, onOpenApplicant }: 
         <span>나의 워크스페이스 · {now.getFullYear()}년 {now.getMonth() + 1}월 {now.getDate()}일</span>
         <h1>확인할 서류가 <em>{pending}건</em> 있어요</h1>
       </div>
-      <Button onClick={() => showNotice()} size="large">새 프로젝트 만들기<PlusIcon /></Button>
+      <Button onClick={onCreateProject} size="large">새 프로젝트 만들기<PlusIcon /></Button>
     </section>
 
     <section aria-label="요약" className="d1-stats">
