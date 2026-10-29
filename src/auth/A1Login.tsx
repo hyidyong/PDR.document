@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { AuthError, login, logout } from '../api/authApi'
 import { BrandLogo, Button, CheckIcon, FileIcon } from '../components/common'
@@ -48,9 +48,13 @@ export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPerso
   const [errors, setErrors] = useState<FieldErrors>({})
   const [notice, setNotice] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // Blocks a second click/Enter before the disabled state renders.
+  const busy = useRef(false)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (busy.current) return
+    busy.current = true
     setErrors({})
     setNotice('')
     setIsSubmitting(true)
@@ -61,10 +65,12 @@ export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPerso
     } catch (error) {
       if (error instanceof AuthError) setErrors({ [error.field]: error.message })
       else setNotice(error instanceof Error ? error.message : '로그인하지 못했습니다.')
-    } finally { setIsSubmitting(false) }
+    } finally { busy.current = false; setIsSubmitting(false) }
   }
 
   const startApplicantDemo = async () => {
+    if (busy.current) return
+    busy.current = true
     setErrors({})
     setNotice('')
     setIsSubmitting(true)
@@ -75,6 +81,7 @@ export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPerso
     } catch (error) {
       void logout()
       setNotice(error instanceof Error ? error.message : '사용자 데모를 열지 못했습니다.')
+      busy.current = false
       setIsSubmitting(false)
     }
   }

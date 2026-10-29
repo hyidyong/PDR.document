@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { UserRole } from '../api/authApi'
 import { BrandLogo, Button, CheckIcon } from '../components/common'
@@ -33,15 +33,18 @@ export function A2RoleSelect({ mode = 'signup', onLogin, onChoose }: { mode?: 's
   const [role, setRole] = useState<UserRole | null>(null)
   const [notice, setNotice] = useState('')
   const [isChoosing, setIsChoosing] = useState(false)
+  // Blocks a second click before the disabled state renders.
+  const busy = useRef(false)
   const isSignup = mode === 'signup'
 
   const next = async () => {
-    if (!role) return
+    if (!role || busy.current) return
     if (isSignup || !onChoose) { showNotice('회원가입은 준비 중이에요. 데모 계정으로 로그인해 주세요'); return }
+    busy.current = true
     setNotice('')
     setIsChoosing(true)
     try { await onChoose(role) }
-    catch (error) { setNotice(error instanceof Error ? error.message : '화면을 열지 못했습니다.'); setIsChoosing(false) }
+    catch (error) { setNotice(error instanceof Error ? error.message : '화면을 열지 못했습니다.'); busy.current = false; setIsChoosing(false) }
   }
 
   return <main className="a1-screen">
@@ -78,7 +81,7 @@ export function A2RoleSelect({ mode = 'signup', onLogin, onChoose }: { mode?: 's
         <div className="a2-footer">
           {isSignup
             ? <div className="a1-signup"><span>이미 계정이 있나요?</span><button className="a1-text-button a1-text-button--brand" onClick={onLogin} type="button">로그인</button></div>
-            : <div className="a1-signup"><button className="a1-text-button a1-text-button--brand" onClick={onLogin} type="button">다른 계정으로 로그인</button></div>}
+            : <div className="a1-signup"><button className="a1-text-button a1-text-button--brand" disabled={isChoosing} onClick={onLogin} type="button">다른 계정으로 로그인</button></div>}
           <Button disabled={!role || isChoosing} onClick={() => void next()} size="large">{isChoosing ? '확인 중...' : <>다음<ArrowRightIcon /></>}</Button>
         </div>
       </div>

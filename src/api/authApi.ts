@@ -27,7 +27,35 @@ export class NoApplicantError extends Error {
   }
 }
 
+/** The backend could not be reached (stopped, crashed, or not answering). */
+export class ServerUnavailableError extends Error {
+  constructor() {
+    super('서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요')
+    this.name = 'ServerUnavailableError'
+  }
+}
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const SERVER_TIMEOUT_MS = 10_000
+
+// A stopped backend shows up as a failed fetch (TypeError) or, through the Vite dev proxy, a 5xx;
+// a backend that never answers is cut off after SERVER_TIMEOUT_MS. All become ServerUnavailableError.
+async function reachServer<T>(task: Promise<T>): Promise<T> {
+  let timer: number | undefined
+  const timeout = new Promise<never>((_, reject) => { timer = window.setTimeout(() => reject(new ServerUnavailableError()), SERVER_TIMEOUT_MS) })
+  try {
+    return await Promise.race([task, timeout])
+  } catch (error) {
+    if (error instanceof ServerUnavailableError) throw error
+    if (error instanceof TypeError || (error instanceof ApiError && error.status >= 500)) {
+      console.error('[auth] 백엔드에 연결하지 못했어요', error)
+      throw new ServerUnavailableError()
+    }
+    throw error
+  } finally {
+    window.clearTimeout(timer)
+  }
+}
 
 export async function login(email: string, password: string): Promise<LoginOutcome> {
   const trimmed = email.trim()
@@ -37,9 +65,10 @@ export async function login(email: string, password: string): Promise<LoginOutco
 
   let project: ProjectView
   try {
-    project = await signIn(trimmed, password)
+    project = await reachServer(signIn(trimmed, password))
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) throw new AuthError('password', error.message)
+    if (error instanceof ServerUnavailableError) void signOut()
     throw error
   }
 
@@ -52,7 +81,7 @@ export async function login(email: string, password: string): Promise<LoginOutco
 /** Called when 서류를 내요 is picked on A2. */
 export async function chooseApplicant(): Promise<Applicant> {
   try {
-    return await getCurrentApplicant()
+    return await reachServer(getCurrentApplicant())
   } catch (error) {
     if (error instanceof ApiError && (error.status === 404 || error.status === 403)) throw new NoApplicantError()
     throw error
