@@ -26,6 +26,8 @@
 .a1-input input { background: none; border: 0; color: var(--color-text-primary); flex: 1; font-size: 14px; min-width: 0; outline: none; }
 .a1-input input::placeholder { color: var(--color-text-secondary); }
 .a1-input svg { flex: 0 0 18px; height: 18px; width: 18px; }
+.a1-input.is-error { border-color: var(--color-error); }
+.a1-field-error { color: var(--color-error); font-size: 12px; font-weight: 500; }
 .a1-options { align-items: center; display: flex; justify-content: space-between; }
 .a1-keep { align-items: center; color: var(--color-text-secondary); display: inline-flex; font-size: 12px; font-weight: 500; gap: 8px; }
 .a1-keep input { accent-color: var(--color-brand); height: 18px; margin: 0; width: 18px; }

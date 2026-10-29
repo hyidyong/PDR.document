@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { AuthError, login } from '../api/authApi'
+import type { UserRole } from '../api/authApi'
 import { BrandLogo, Button, CheckIcon, FileIcon } from '../components/common'
+import { clearSession, getSession, saveSession, takeRestoredSession } from '../store/sessionStore'
+import { A2RoleSelect } from './A2RoleSelect'
 import './A1Login.css'
 
-const demoNotice = '로그인 없이 둘러보기'
+type FieldErrors = { email?: string; password?: string }
 
 function MailIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><rect height="14" rx="2" stroke="currentColor" strokeWidth="1.7" width="18" x="3" y="5" /><path d="m4 7 8 6 8-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" /></svg>
@@ -29,10 +33,45 @@ function ArrowRightIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
 }
 
+// onApplicantDemo / onAdminDemo open the 신청자 / 담당자 screens; a successful login reuses them.
 export function A1Login({ onApplicantDemo, onAdminDemo, onPersonalCheck }: { onApplicantDemo: () => void; onAdminDemo: () => void; onPersonalCheck: () => void }) {
+  const [view, setView] = useState<'login' | 'signup'>('login')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [keepSignedIn, setKeepSignedIn] = useState(false)
+  const [errors, setErrors] = useState<FieldErrors>({})
   const [notice, setNotice] = useState('')
-  const showNotice = () => setNotice(demoNotice)
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); showNotice() }
+  const [submitting, setSubmitting] = useState(false)
+  const enter = (role: UserRole) => { if (role === 'REVIEWER') onAdminDemo(); else onApplicantDemo() }
+
+  // On the first visit after a reload, a kept session skips the login screen.
+  // Any later return to A1 (e.g. 신청자 화면의 로그아웃) ends the session instead.
+  const handledSession = useRef(false)
+  useEffect(() => {
+    if (handledSession.current) return
+    handledSession.current = true
+    const restored = takeRestoredSession()
+    if (restored) { if (restored.user.role === 'REVIEWER') onAdminDemo(); else onApplicantDemo(); return }
+    if (getSession()) clearSession()
+  }, [onAdminDemo, onApplicantDemo])
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setErrors({})
+    setNotice('')
+    setSubmitting(true)
+    try {
+      const session = await login(email, password)
+      saveSession(session, keepSignedIn)
+      enter(session.user.role)
+    } catch (error) {
+      if (error instanceof AuthError) setErrors({ [error.field]: error.message })
+      else { console.error(error); setNotice('로그인하지 못했어요. 잠시 후 다시 시도해 주세요') }
+      setSubmitting(false)
+    }
+  }
+
+  if (view === 'signup') return <A2RoleSelect onLogin={() => setView('login')} />
 
   return <main className="a1-screen">
     <header className="a1-header"><BrandLogo /></header>
@@ -53,16 +92,18 @@ export function A1Login({ onApplicantDemo, onAdminDemo, onPersonalCheck }: { onA
         <form className="a1-card" noValidate onSubmit={handleSubmit}>
           <div className="a1-card__head"><h2>로그인</h2><p>모딧 계정으로 로그인해 주세요.</p></div>
           <div className="a1-fields">
-            <label className="a1-field"><span>이메일</span><span className="a1-input"><input autoComplete="email" placeholder="이메일 주소를 입력해 주세요" type="email" /><MailIcon /></span></label>
-            <label className="a1-field"><span>비밀번호</span><span className="a1-input"><input autoComplete="current-password" placeholder="비밀번호를 입력해 주세요" type="password" /><LockIcon /></span></label>
+            <label className="a1-field"><span>이메일</span><span className={`a1-input ${errors.email ? 'is-error' : ''}`}><input aria-describedby={errors.email ? 'a1-email-error' : undefined} aria-invalid={Boolean(errors.email)} autoComplete="email" onChange={(event) => { setEmail(event.target.value); setErrors({ ...errors, email: undefined }) }} placeholder="이메일 주소를 입력해 주세요" type="email" value={email} /><MailIcon /></span>
+              {errors.email && <span className="a1-field-error" id="a1-email-error" role="alert">{errors.email}</span>}</label>
+            <label className="a1-field"><span>비밀번호</span><span className={`a1-input ${errors.password ? 'is-error' : ''}`}><input aria-describedby={errors.password ? 'a1-password-error' : undefined} aria-invalid={Boolean(errors.password)} autoComplete="current-password" onChange={(event) => { setPassword(event.target.value); setErrors({ ...errors, password: undefined }) }} placeholder="비밀번호를 입력해 주세요" type="password" value={password} /><LockIcon /></span>
+              {errors.password && <span className="a1-field-error" id="a1-password-error" role="alert">{errors.password}</span>}</label>
           </div>
           <div className="a1-options">
-            <label className="a1-keep"><input type="checkbox" /><span>로그인 상태 유지</span></label>
-            <button className="a1-text-button" onClick={showNotice} type="button">비밀번호 찾기</button>
+            <label className="a1-keep"><input checked={keepSignedIn} onChange={(event) => setKeepSignedIn(event.target.checked)} type="checkbox" /><span>로그인 상태 유지</span></label>
+            <button className="a1-text-button" onClick={() => setNotice('비밀번호 찾기는 준비 중이에요')} type="button">비밀번호 찾기</button>
           </div>
           {notice && <p className="a1-notice" role="alert">{notice}</p>}
-          <Button size="large" type="submit">로그인</Button>
-          <div className="a1-signup"><span>아직 계정이 없나요?</span><button className="a1-text-button a1-text-button--brand" onClick={showNotice} type="button">회원가입</button></div>
+          <Button disabled={submitting} size="large" type="submit">로그인</Button>
+          <div className="a1-signup"><span>아직 계정이 없나요?</span><button className="a1-text-button a1-text-button--brand" onClick={() => setView('signup')} type="button">회원가입</button></div>
 
           <div className="a1-demo">
             <div className="a1-demo__divider"><span>데모 체험</span></div>

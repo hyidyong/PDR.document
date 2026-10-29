@@ -6,9 +6,6 @@
 .admin-header nav { display: flex; gap: 8px; }
 .admin-header__search { align-items: center; background: var(--color-surface-muted); border-radius: 8px; color: var(--color-text-secondary); display: flex; gap: 8px; height: 40px; margin-left: auto; padding: 0 14px; width: 300px; }
 .admin-header__search input { background: transparent; border: 0; color: var(--color-text-primary); flex: 1; font-size: 13px; min-width: 0; outline: 0; }
-.admin-header .admin-header__profile { align-items: center; cursor: pointer; display: inline-flex; gap: 8px; margin-left: 0; }
-.admin-header .admin-header__profile span { margin-left: 0; }
-.admin-header .admin-header__profile .admin-header__avatar { align-items: center; background: var(--color-lavender); border-radius: 999px; color: var(--color-brand); display: inline-flex; font-size: 14px; font-weight: 700; height: 36px; justify-content: center; width: 36px; }
 
 /* Page header */
 .admin-page { margin: 0 auto; max-width: 1440px; padding: 0 40px 32px; }
