@@ -7,11 +7,14 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.mock.web.MockMultipartFile;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(properties = "app.storage-root=build/test-uploads")
+@SpringBootTest(properties = {"app.storage-root=build/test-uploads", "app.storage.provider=local",
+        "app.supabase.url=https://test.supabase.co"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class SubmissionFlowTest {
     @Autowired SubmissionService service;
     private static final String PROJECT = "modit-2026";
@@ -54,5 +57,17 @@ class SubmissionFlowTest {
                 new MockMultipartFile("file", "fake.pdf", "application/pdf", "not a pdf".getBytes(StandardCharsets.UTF_8))));
         assertThrows(IllegalArgumentException.class, () -> service.upload(PROJECT, APPLICANT, "plan",
                 new MockMultipartFile("file", "bad.txt", "text/plain", "hello".getBytes(StandardCharsets.UTF_8))));
+    }
+
+    @Test void recordsSizeLimitInsteadOfPretendingLargePdfWasAnalyzed() {
+        byte[] content = new byte[4 * 1024 * 1024 + 1];
+        byte[] header = "%PDF-1.4\n".getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(header, 0, content, 0, header.length);
+        service.upload(PROJECT, APPLICANT, "plan", new MockMultipartFile("file", "large.pdf", "application/pdf", content));
+
+        var inspection = service.inspections(PROJECT, APPLICANT, "plan").getLast();
+        assertEquals(InspectionStatus.UNVERIFIABLE, inspection.status());
+        assertEquals("SIZE_LIMIT", inspection.source());
+        assertFalse(inspection.findings().isEmpty());
     }
 }

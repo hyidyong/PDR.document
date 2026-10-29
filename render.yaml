@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: modit-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    autoDeploy: false
+    envVars:
+      - key: APP_REPOSITORY_PROVIDER
+        value: memory
+      - key: APP_STORAGE_PROVIDER
+        value: supabase
+      - key: SUPABASE_STORAGE_BUCKET
+        value: expense-documents
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: APP_CORS_ORIGINS
+        sync: false

@@ -18,12 +18,13 @@ const byName = (a: AdminApplicant, b: AdminApplicant) => a.name.localeCompare(b.
 const byRecent = (a: AdminApplicant, b: AdminApplicant) => (b.lastSubmittedAt ?? '').localeCompare(a.lastSubmittedAt ?? '') || byName(a, b)
 const comparators: Record<DashboardSort, (a: AdminApplicant, b: AdminApplicant) => number> = { recent: byRecent, name: byName }
 
-export function AdminApp({ onExit }: { onExit: () => void }) {
-  return <AdminProvider><AdminScreens onExit={onExit} /></AdminProvider>
+// deadlineAt comes from the login result (App); it overrides the project's own deadline.
+export function AdminApp({ deadlineAt, onExit }: { deadlineAt?: string | null; onExit: () => void }) {
+  return <AdminProvider><AdminScreens deadlineAt={deadlineAt} onExit={onExit} /></AdminProvider>
 }
 
-function AdminScreens({ onExit }: { onExit: () => void }) {
-  const { loading, project, applicants, eventsById, requestRevision, approve, cancelApproval } = useAdmin()
+function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onExit: () => void }) {
+  const { loading, project: storedProject, applicants, eventsById, requestRevision, approve, cancelApproval } = useAdmin()
   const [filter, setFilter] = useState<DashboardFilter>({ tab: 'ALL', query: '', sort: 'recent', page: 1 })
   // Kept here so the 체크박스 선택 survives a trip to D6 and back.
   const [selected, setSelected] = useState<Set<string>>(() => new Set())
@@ -33,6 +34,7 @@ function AdminScreens({ onExit }: { onExit: () => void }) {
   const [approving, setApproving] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const sorted = useMemo(() => [...applicants].sort(comparators[filter.sort]), [applicants, filter.sort])
+  const project = useMemo(() => storedProject && deadlineAt ? { ...storedProject, deadlineAt } : storedProject, [storedProject, deadlineAt])
 
   const index = sorted.findIndex((applicant) => applicant.applicantId === openId)
   const current = index >= 0 ? sorted[index] : null
@@ -74,6 +76,7 @@ function AdminScreens({ onExit }: { onExit: () => void }) {
 
   return <div className="admin-app">
     <AdminHeader onExit={onExit} onHome={goHome} />
+    <div className="admin-integration-notice" role="status"><strong>디자인 미리보기</strong> 관리자 API가 아직 연결되지 않아 아래 현황·보완 요청·승인 동작은 mock 데이터로만 표시됩니다.</div>
     {loading || !project
       ? null
       : current

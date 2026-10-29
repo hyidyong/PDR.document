@@ -1,6 +1,9 @@
 # 프론트엔드 API 명세 (로그인 · 담당자 화면)
 
-A 계정(로그인)과 D 담당자 화면이 지금 목업으로 쓰는 데이터 형식을 API 명세로 정리한 문서입니다. 백엔드에서 아래 형식대로 응답해 주면, 프론트는 `src/api/authApi.ts`와 `src/api/adminApi.ts`의 함수 안만 `fetch` 호출로 바꾸면 됩니다. 화면 코드는 고치지 않아도 됩니다.
+A 계정(로그인)과 D 담당자 화면이 쓰는 데이터 형식을 API 명세로 정리한 문서입니다.
+
+- **로그인:** 이미 Supabase와 백엔드에 연결되어 있습니다(2장).
+- **담당자 화면:** 아직 목업입니다(3장). 백엔드에서 3장 형식대로 응답해 주면, 프론트는 `src/api/adminApi.ts`의 함수 안만 `src/api.ts`의 `request()` 방식 호출로 바꾸면 됩니다. 화면 코드는 고치지 않아도 됩니다.
 
 - **주소:** 이미 있는 백엔드 API(`backend/README.md`)와 맞춰 `/api/projects/{projectId}` 아래에 두었습니다. 시연 프로젝트 ID는 `modit-2026`입니다.
 - **확정 여부:** 주소는 제안입니다. 바꿔야 하면 알려주세요. 요청·응답 형식은 지금 프론트가 실제로 쓰는 형식입니다.
@@ -11,7 +14,7 @@ A 계정(로그인)과 D 담당자 화면이 지금 목업으로 쓰는 데이�
 | 항목 | 내용 |
 |---|---|
 | 형식 | 요청·응답 모두 JSON (`Content-Type: application/json`). ZIP 다운로드만 예외 |
-| 인증 | 로그인 후 받은 토큰을 `Authorization: Bearer {token}` 헤더로 보냄. 프론트는 토큰을 `src/store/sessionStore.ts` 한 곳에만 저장함 |
+| 인증 | Supabase 로그인 토큰(`access_token`)을 `Authorization: Bearer {token}` 헤더로 보냄. 토큰은 Supabase 클라이언트(`src/supabase.ts`)가 저장하고, `src/api.ts`의 `request()`가 헤더에 붙임 |
 | 시각 | 지금 목업은 `"2026-10-28T15:20"`(한국 시각, 초·시간대 없음) 형식. 서버는 `"2026-10-28T15:20:00+09:00"`처럼 시간대를 붙여 줘도 됨. 프론트에서 맞춰 읽음 |
 | 오류 응답 | `{ "code": "INVALID_CREDENTIALS", "message": "이메일 또는 비밀번호가 맞지 않아요" }`. `message`는 화면에 그대로 보여줄 수 있는 한국어 문장 |
 
@@ -32,66 +35,64 @@ A 계정(로그인)과 D 담당자 화면이 지금 목업으로 쓰는 데이�
 
 ## 2. 로그인 (`src/api/authApi.ts`)
 
+`authApi.login()`은 `src/api.ts`의 `signInAndResolveUser()`를 감싼 함수입니다. 입력칸별 오류 문구와 화면에 보여줄 사용자 이름·이메일만 덧붙입니다.
+
 ### 로그인 — `login(email, password)`
 
-`POST /api/auth/login`
+순서
+1. **입력 검사(프론트):** 이메일이 비었거나 형식이 틀리면 이메일 칸 아래에, 비밀번호가 비었으면 비밀번호 칸 아래에 오류를 보여줍니다. 이때는 서버를 부르지 않습니다.
+2. **Supabase 로그인:** `supabase.auth.signInWithPassword({ email, password })`
+3. **역할 판단:** Supabase 사용자의 `app_metadata.role`이 `"admin"`이면 담당자, 그 밖에는 신청자입니다. `app_metadata`는 사용자가 직접 바꿀 수 없는 값이어서, 역할은 Supabase 대시보드나 서버에서만 넣어야 합니다.
+4. **프로젝트 조회:** `GET /api/projects/{projectId}`
+   ```json
+   { "id": "modit-2026", "name": "2026 창업동아리 지원사업 정산", "deadlineAt": "2026-10-31T23:59:59+09:00" }
+   ```
+5. **신청자만, 내 신청자 정보 조회:** `GET /api/projects/{projectId}/applicants/me`
+   ```json
+   { "id": "applicant-001", "projectId": "modit-2026", "name": "김청년" }
+   ```
+6. **이동:** 담당자는 D5 대시보드로, 신청자는 서류 점검 화면으로 갑니다. `deadlineAt`이 없거나 잘못된 값이면 프론트 기본값 `2026-10-31T23:59:59+09:00`을 씁니다.
 
-요청
-```json
-{ "email": "admin@example.com", "password": "demo1234" }
-```
-
-응답 `200`
+`login()`이 돌려주는 값(`LoginOutcome`)
 ```json
 {
-  "token": "demo-reviewer-001-1761700000000",
-  "user": {
-    "id": "reviewer-001",
-    "name": "박담당",
-    "email": "admin@example.com",
-    "role": "REVIEWER",
-    "organization": "한국대학교 창업지원단"
-  }
+  "kind": "admin",
+  "project": { "id": "modit-2026", "name": "2026 창업동아리 지원사업 정산", "deadlineAt": "2026-10-31T23:59:59+09:00" },
+  "user": { "name": "admin", "email": "admin@example.com", "role": "admin" }
 }
 ```
-
-- `role`은 `APPLICANT`(신청자) 또는 `REVIEWER`(담당자)입니다. 백엔드의 개발용 헤더 `X-Dev-Role: REVIEWER`와 같은 이름을 씁니다.
-- 프론트는 `role`을 보고 이동합니다. `APPLICANT`는 신청자 화면(B1), `REVIEWER`는 담당자 화면(D5)으로 갑니다.
+- `kind`·`role`은 `"admin"` 또는 `"applicant"`입니다. 신청자면 `applicant` 필드(5번 응답)가 함께 들어갑니다.
+- `user.name`
+  - 신청자: 5번 응답의 `name`
+  - 담당자: Supabase `user_metadata.name`. 이 값이 없으면 이메일 `@` 앞부분을 씁니다. 담당자 이름을 화면에 보여주려면 Supabase 사용자에 `user_metadata.name`을 넣어 주세요.
+- `user`는 `src/store/sessionStore.ts`에 저장해 A3 프로필 메뉴가 씁니다. 토큰은 Supabase가 따로 저장합니다.
 
 오류
 
-| 상태 | code | 프론트 표시 위치 | 예시 message |
-|---|---|---|---|
-| 400 | `INVALID_EMAIL` | 이메일 칸 아래 | 이메일 형식이 맞지 않아요 |
-| 400 | `PASSWORD_REQUIRED` | 비밀번호 칸 아래 | 비밀번호를 입력해 주세요 |
-| 401 | `INVALID_CREDENTIALS` | 비밀번호 칸 아래 | 이메일 또는 비밀번호가 맞지 않아요 |
-
-- 그 밖의 오류가 오면 프론트는 "로그인하지 못했어요. 잠시 후 다시 시도해 주세요"를 띄웁니다.
-- 지금은 이메일 빈칸·형식 검사도 목업 `login()` 함수 안에서 합니다. API로 바꾸면 이 함수 내용이 통째로 바뀌므로, 같은 검사를 서버에서 해 주세요.
-
-데모 계정(목업): 비밀번호는 두 계정 모두 `demo1234`입니다.
-
-| 이메일 | 역할 | 이름 |
+| 상황 | 프론트 표시 위치 | message |
 |---|---|---|
-| `applicant@example.com` | `APPLICANT` | 김청년 |
-| `admin@example.com` | `REVIEWER` | 박담당 |
+| 이메일 빈칸 · 형식 오류 | 이메일 칸 아래 | 이메일을 입력해 주세요 / 이메일 형식이 맞지 않아요 |
+| 비밀번호 빈칸 | 비밀번호 칸 아래 | 비밀번호를 입력해 주세요 |
+| Supabase 로그인 실패, 또는 서버가 `401`을 응답 | 비밀번호 칸 아래 | 이메일 또는 비밀번호를 확인해 주세요. (401이면 서버 `message`) |
+| 4·5번 API가 그 밖의 오류를 응답 | 로그인 버튼 위 안내 | 서버 응답의 `message` 그대로 |
+
+- 4·5번이 실패하면 프론트는 Supabase에서 로그아웃한 뒤 오류를 보여줍니다.
+- 서버 오류 응답에는 화면에 그대로 보여줄 수 있는 `message`를 넣어 주세요.
 
 ### 로그아웃 — `logout()`
 
-`POST /api/auth/logout` (Authorization 헤더 필요) → `204`
+`supabase.auth.signOut()`. 별도 백엔드 API는 없습니다.
 
-- 서버 응답과 관계없이 프론트는 저장한 토큰을 지우고 로그인 화면으로 돌아갑니다.
+- 프론트는 저장한 사용자 정보를 지우고 로그인 화면(A1)으로 돌아갑니다.
 
-### (제안) 내 정보 — 아직 프론트에서 부르지 않음
+### 로그인 없이 쓰는 기능
 
-`GET /api/auth/me` → `200 { user }` / `401`
-
-- "로그인 상태 유지"로 저장해 둔 토큰은, 지금은 새로고침할 때 확인 없이 그대로 씁니다.
-- 이 API가 생기면 새로고침 때 토큰이 아직 유효한지 확인하는 데 쓰겠습니다.
+- **[담당자 데모]:** 로그인 없이 담당자 화면을 목업 데이터로 엽니다. 이때 `getProject()` 호출은 `401`이 나므로 시연용 프로젝트 정보를 대신 씁니다.
+- **"로그인 상태 유지" 체크박스:** 아직 연결되지 않았습니다. Supabase 클라이언트는 체크 여부와 관계없이 세션을 저장하지만(`persistSession: true`), 지금 화면은 새로고침하면 항상 A1부터 시작합니다.
 
 ## 3. 담당자 화면 (`src/api/adminApi.ts`)
 
-기본 경로: `/api/projects/{projectId}/review`. 모두 Authorization 헤더가 필요하고, `REVIEWER` 역할만 쓸 수 있습니다.
+기본 경로: `/api/projects/{projectId}/review`. 모두 Authorization 헤더가 필요하고, `app_metadata.role`이 `"admin"`인 사용자만 쓸 수 있습니다. 아니면 `403`입니다.
 
 ### 공통 형식
 
@@ -148,16 +149,19 @@ A 계정(로그인)과 D 담당자 화면이 지금 목업으로 쓰는 데이�
 | `cancelApproval(id)` | `DELETE /review/applicants/{applicantId}/approval` | — | `AdminChange` |
 | `downloadDocumentsZip(ids)` | `POST /review/downloads/zip` | `{ "applicantIds": ["A001", "A002"] }` | ZIP 파일 |
 
-**프로젝트**: 지금 목업 형식입니다. 백엔드는 지금 `{ id, name }`만 줍니다.
+**프로젝트**: `adminApi.getProject()`는 `src/api.ts`의 `getProject()`(`ProjectView`)를 그대로 부릅니다. 받은 값에 아직 서버에 없는 두 필드를 목업 값으로 더합니다.
 ```json
 {
+  "id": "modit-2026",
   "name": "2026 창업동아리 지원사업 정산",
-  "deadlineBadge": "마감 10월 31일 · D-3",
+  "deadlineAt": "2026-10-31T23:59:59+09:00",
   "linkSharedAt": "2026-10-24T09:10",
   "zipFileName": "2026_창업동아리_정산.zip"
 }
 ```
-- `deadlineBadge`는 화면용 문구입니다. 서버가 마감일 `deadline: "2026-10-31"`만 주면, 프론트에서 "D-3" 문구를 만들겠습니다.
+- **마감 배지:** "마감 10월 31일 · D-3" 같은 문구는 `deadlineAt`으로 프론트가 만듭니다(`src/utils/projectDeadline.ts`).
+- **서버에 추가하면 좋은 필드:** `linkSharedAt`(제출 링크 공유 시각, 진행 이력 첫 줄에 씀)와 `zipFileName`(ZIP 파일 이름)은 지금 목업 값입니다. 서버가 이 두 필드도 주면 그대로 씁니다.
+- **실패할 때:** 로그인하지 않았거나(`401`) 서버에 연결되지 않으면 위 목업 값을 씁니다.
 
 **서류·AI 결과**
 ```json

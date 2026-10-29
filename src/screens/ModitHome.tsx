@@ -4,6 +4,7 @@ import { documentLabels } from './checkModel'
 import type { DocumentId, FlowOverview } from './checkModel'
 import { mockProject } from './mockProject'
 import './ModitHome.css'
+import { formatDeadlineDate, formatDeadlineStatus } from '../utils/projectDeadline'
 
 const documentIds: DocumentId[] = ['plan', 'contract', 'receipts']
 
@@ -25,7 +26,7 @@ function submissionStatus(overview: FlowOverview) {
   return { label: '최종 제출 전', badge: 'not-submitted' as const }
 }
 
-export function ModitHome({ overview, onNavigate, onLogout }: { overview: FlowOverview; onNavigate: (page: MainPage) => void; onLogout: () => void }) {
+export function ModitHome({ deadlineAt, overview, onNavigate, onLogout }: { deadlineAt?: string | null; overview: FlowOverview; onNavigate: (page: MainPage) => void; onLogout: () => void }) {
   const uploadedCount = documentIds.filter((id) => overview.documents[id]).length
   const passedCount = documentIds.filter((id) => overview.documents[id]?.status === 'pass').length
   const status = submissionStatus(overview)
@@ -43,7 +44,7 @@ export function ModitHome({ overview, onNavigate, onLogout }: { overview: FlowOv
 
       <section aria-labelledby="home-project-title" className="modit-home__project">
         <div><span className="modit-home__section-label">참여 중인 프로젝트</span><h2 id="home-project-title">{mockProject.name}</h2><p>{mockProject.organization}</p></div>
-        <div className="modit-home__deadline"><span>서류 제출 마감</span><strong>{mockProject.deadline}</strong><small>기존 화면의 시연용 일정</small></div>
+        <div className="modit-home__deadline"><span>서류 제출 마감</span><strong>{formatDeadlineDate(deadlineAt)}까지</strong><small>{formatDeadlineStatus(deadlineAt)}</small></div>
       </section>
 
       <section aria-labelledby="home-progress-title" className="modit-home__progress">

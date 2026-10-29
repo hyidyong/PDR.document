@@ -19,7 +19,6 @@ export type AdminEvent = { kind: AdminEventKind; at: string; label: string; tone
 
 export const adminProject = {
   name: '2026 창업동아리 지원사업 정산',
-  deadlineBadge: '마감 10월 31일 · D-3',
   linkSharedAt: '2026-10-24T09:10',
   zipFileName: '2026_창업동아리_정산.zip',
 } as const

@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Environment variables
+.env
+.env.*
+!.env.example
+!backend/.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -26,7 +32,9 @@ dist-ssr
 # Spring Boot development artifacts
 backend/.gradle/
 backend/build/
+backend/build-*/
+backend/build-test-run/
 backend/uploads/
-
-.claude/settings.local.json
 design/out/
+.claude/settings.local.json
+.playwright-mcp/

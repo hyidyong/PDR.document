@@ -18,12 +18,12 @@ function ArrowRightIcon() {
 }
 
 const roles: { role: UserRole; chip: string; title: string; description: string; icon: ReactNode }[] = [
-  { role: 'REVIEWER', chip: '기관·동아리 담당자', title: '서류를 받아요', description: '폼을 만들고 제출 현황을 관리해요', icon: <InboxIcon /> },
-  { role: 'APPLICANT', chip: '개인 사용자', title: '서류를 내요', description: '제출 전에 내 서류를 점검해요', icon: <SendIcon /> },
+  { role: 'admin', chip: '기관·동아리 담당자', title: '서류를 받아요', description: '폼을 만들고 제출 현황을 관리해요', icon: <InboxIcon /> },
+  { role: 'applicant', chip: '개인 사용자', title: '서류를 내요', description: '제출 전에 내 서류를 점검해요', icon: <SendIcon /> },
 ]
 
 // A2 회원가입 역할 선택. Sign-up is not built yet, so 다음 only shows a notice;
-// the chosen role is kept for when it is (개인 사용자 → 신청자 흐름 B1, 담당자 → D5).
+// the chosen role is kept for when it is (개인 사용자 → 신청자 화면, 담당자 → D5).
 export function A2RoleSelect({ onLogin }: { onLogin: () => void }) {
   const [role, setRole] = useState<UserRole | null>(null)
   const [notice, setNotice] = useState('')

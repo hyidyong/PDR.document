@@ -5,6 +5,7 @@ import { Button, CheckIcon, ChevronDownIcon, ChevronRightIcon, StatusBadge } fro
 import { ChevronLeftIcon, ClockIcon, DownloadIcon, LinkIcon, SearchIcon, SortIcon } from './adminIcons'
 import { adminStatusBadge, adminStatusLabels, adminStatusOrder, formatShort } from './mockAdminData'
 import type { AdminApplicant, AdminStatus } from './mockAdminData'
+import { formatDeadlineBadge } from '../utils/projectDeadline'
 
 export type DashboardSort = 'recent' | 'name'
 export type DashboardFilter = { tab: 'ALL' | AdminStatus; query: string; sort: DashboardSort; page: number }
@@ -93,7 +94,7 @@ export function D5Dashboard({ project, applicants, filter, selected, onFilterCha
     <div className="admin-page-header">
       <div className="admin-page-header__text">
         <div className="admin-breadcrumb"><span>프로젝트</span><ChevronRightIcon width={14} height={14} /><span className="is-current">{project.name}</span></div>
-        <div className="admin-title-row"><h1>{project.name}</h1><span className="admin-deadline"><ClockIcon width={14} height={14} />{project.deadlineBadge}</span></div>
+        <div className="admin-title-row"><h1>{project.name}</h1><span className="admin-deadline"><ClockIcon width={14} height={14} />{formatDeadlineBadge(project.deadlineAt)}</span></div>
       </div>
       <div className="admin-header-actions">
         <button className="admin-text-button" type="button"><LinkIcon width={16} height={16} />제출 링크 관리</button>

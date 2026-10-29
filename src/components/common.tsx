@@ -34,11 +34,11 @@ export function MainNavigation({ activePage, onNavigate }: { activePage: MainPag
   </nav>
 }
 
-export function AppHeader({ activePage, onNavigate, onLogout }: { activePage: MainPage; onNavigate: (page: MainPage) => void; onLogout: () => void }) {
+export function AppHeader({ activePage, onNavigate, onLogout, profileName = '김청년', actionLabel = '로그아웃' }: { activePage: MainPage; onNavigate: (page: MainPage) => void; onLogout: () => void; profileName?: string; actionLabel?: string }) {
   return <header className="app-header">
     <BrandLogo onClick={() => onNavigate('home')} />
     <MainNavigation activePage={activePage} onNavigate={onNavigate} />
-    <button aria-label="김청년님 로그아웃" className="app-header__profile" onClick={onLogout} title="로그아웃" type="button">김청년님 <span>로그아웃</span></button>
+    <button aria-label={`${profileName} ${actionLabel}`} className="app-header__profile" onClick={onLogout} title={actionLabel} type="button">{profileName} <span>{actionLabel}</span></button>
   </header>
 }
 

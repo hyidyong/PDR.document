@@ -22,7 +22,7 @@ public class GlobalErrorHandler {
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorBody> conflict(IllegalStateException e, HttpServletRequest request) { return error(HttpStatus.CONFLICT, e.getMessage(), request); }
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<ErrorBody> tooLarge(MaxUploadSizeExceededException e, HttpServletRequest request) { return error(HttpStatus.PAYLOAD_TOO_LARGE, "파일은 20MB 이하여야 합니다.", request); }
+    public ResponseEntity<ErrorBody> tooLarge(MaxUploadSizeExceededException e, HttpServletRequest request) { return error(HttpStatus.PAYLOAD_TOO_LARGE, "파일은 10MB 이하여야 합니다.", request); }
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorBody> status(ResponseStatusException e, HttpServletRequest request) { return error((HttpStatus)e.getStatusCode(), e.getReason(), request); }
 }

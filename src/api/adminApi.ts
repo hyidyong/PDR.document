@@ -1,10 +1,14 @@
 // Data access for the admin (담당자) screens.
 // Every function returns a Promise so the bodies can later be swapped for fetch calls
 // without touching the screens. For now they read and write a mock state kept in localStorage.
+import { ApiError, getProject as fetchProject, PROJECT_ID } from '../api'
+import type { ProjectView } from '../api'
 import { adminProject, clubNames, getIssues, mockApplicants, seedEvents, toLocalIso } from '../admin/mockAdminData'
 import type { AdminApplicant, AdminEvent, AdminIssue, AdminStatus } from '../admin/mockAdminData'
+import { DEFAULT_PROJECT_DEADLINE } from '../utils/projectDeadline'
 
-export type AdminProject = typeof adminProject
+// The server's ProjectView plus two fields only the admin screens use so far.
+export type AdminProject = ProjectView & { linkSharedAt: string; zipFileName: string }
 /** What D6·D9 show about an applicant's 제출 서류. */
 export type ApplicantDocuments = { clubName: string; issues: AdminIssue[] }
 export type AdminChange ={ applicant: AdminApplicant; events: AdminEvent[] }
@@ -76,8 +80,16 @@ function change(applicant: AdminApplicant, status: AdminStatus, event: AdminEven
   return copy({ applicant, events: state.events[applicant.applicantId] })
 }
 
+/** Uses the server project (name, deadlineAt) when signed in; 담당자 데모 without a login falls back to the mock. */
 export async function getProject(): Promise<AdminProject> {
-  return adminProject
+  const mock: AdminProject = { id: PROJECT_ID, name: adminProject.name, deadlineAt: DEFAULT_PROJECT_DEADLINE, linkSharedAt: adminProject.linkSharedAt, zipFileName: adminProject.zipFileName }
+  try {
+    const project = await fetchProject()
+    return { ...mock, ...project, deadlineAt: project.deadlineAt ?? mock.deadlineAt }
+  } catch (error) {
+    if (!(error instanceof ApiError && error.status === 401)) console.warn('프로젝트 정보를 불러오지 못해 시연 데이터를 써요.', error)
+    return mock
+  }
 }
 
 export async function getApplicants(): Promise<AdminApplicant[]> {

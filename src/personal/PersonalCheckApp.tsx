@@ -21,7 +21,7 @@ export function PersonalCheckApp({ onExit }: { onExit: () => void }) {
   const navigate = (page: MainPage) => { if (page === 'home') onExit(); else if (page === 'check') restart() }
 
   return <div className="personal-flow">
-    <AppHeader activePage="check" onNavigate={navigate} onLogout={onExit} />
+    <AppHeader actionLabel="나가기" activePage="check" onNavigate={navigate} onLogout={onExit} profileName="개인 점검" />
     {step === 'input' && <C2CriteriaInput onNext={() => { setCheckedAt(new Date()); setStep('checklist') }} />}
     {step === 'checklist' && <C3Checklist criteria={criteria} sourceDate={checkedAt} onChange={setCriteria} onStart={() => { setUploads([]); setStep('check') }} />}
     {step === 'check' && <PersonalCheck criteria={criteria} uploads={uploads} onUploadsChange={setUploads} onBack={() => setStep('checklist')} onComplete={() => setStep('done')} />}
