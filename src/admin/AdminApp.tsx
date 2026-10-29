@@ -20,6 +20,8 @@ const byName = (a: AdminApplicant, b: AdminApplicant) => a.name.localeCompare(b.
 // 최근 제출순: newest first, applicants who have not submitted last (by name among themselves).
 const byRecent = (a: AdminApplicant, b: AdminApplicant) => (b.lastSubmittedAt ?? '').localeCompare(a.lastSubmittedAt ?? '') || byName(a, b)
 const comparators: Record<DashboardSort, (a: AdminApplicant, b: AdminApplicant) => number> = { recent: byRecent, name: byName }
+// The yellow "디자인 미리보기" banner (담당자 화면 is mock data). Hidden for the demo; set to true to show it again.
+const SHOW_MOCK_BANNER = false
 
 // deadlineAt comes from the login result (App); it overrides the project's own deadline.
 export function AdminApp({ deadlineAt, onExit, onSwitchRole }: { deadlineAt?: string | null; onExit: () => void; onSwitchRole?: () => void }) {
@@ -85,7 +87,7 @@ function AdminScreens({ deadlineAt, onExit, onSwitchRole }: { deadlineAt?: strin
   return <div className="admin-app">
     <AdminHeader active={menu} onExit={onExit} onNavigate={openMenu} onSwitchRole={onSwitchRole} />
     <ReadyNotice />
-    <div className="admin-integration-notice" role="status"><strong>디자인 미리보기</strong> 관리자 API가 아직 연결되지 않아 아래 현황·보완 요청·승인 동작은 mock 데이터로만 표시됩니다.</div>
+    {SHOW_MOCK_BANNER && <div className="admin-integration-notice" role="status"><strong>디자인 미리보기</strong> 관리자 API가 아직 연결되지 않아 아래 현황·보완 요청·승인 동작은 mock 데이터로만 표시됩니다.</div>}
     {loading || !project
       ? null
       : current
