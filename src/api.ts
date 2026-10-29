@@ -25,7 +25,7 @@ export type ChecklistItem = {
 }
 export type ChecklistResponse = {
   schema_version: '2.0'; programName: string; documentType: string; deadline: string | null;
-  filenameRule: string | null; items: ChecklistItem[]; questions: string[]; webSearchUsed: boolean;
+  filenameRule: string | null; items: ChecklistItem[]; questions?: string[] | null; webSearchUsed: boolean;
   sourceVerification: string; disclaimer: string
 }
 

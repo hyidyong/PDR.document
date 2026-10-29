@@ -6,7 +6,8 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // Supabase Edge Functions use Deno APIs and are validated/deployed separately from the Vite app.
+  globalIgnores(['dist', 'supabase/functions/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

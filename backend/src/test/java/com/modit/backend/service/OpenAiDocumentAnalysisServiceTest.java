@@ -47,12 +47,41 @@ class OpenAiDocumentAnalysisServiceTest {
     }
 
     @Test void mapsPassingContractWithoutFindings() throws Exception {
-        var service = service(review("goods_purchase_contract", "C", null, "pass", "review"));
+        var service = service(review("goods_purchase_contract", "CT-", null, "pass", "review"));
 
         var result = service.analyze(document("contract"));
 
         assertEquals(InspectionStatus.PASS, result.status());
         assertEquals(0, result.findings().size());
+    }
+
+    @Test void mapsContractAmountMismatchUsingCt02() throws Exception {
+        var service = service(review("goods_purchase_contract", "CT-", "CT-02", "fail", "revision"));
+
+        var result = service.analyze(document("contract"));
+
+        assertEquals(InspectionStatus.RECOMMEND, result.status());
+        assertEquals("CT-02", result.findings().getFirst().id());
+    }
+
+    @Test void balancedBusinessPlanBudgetPassesWithoutOptionalRatio() throws Exception {
+        var service = service(review("business_plan", "B", null, "pass", "review"));
+
+        var result = service.analyze(document("plan"));
+
+        assertEquals(InspectionStatus.PASS, result.status());
+        assertEquals(0, result.findings().size());
+    }
+
+    @Test void mismatchedBusinessPlanBudgetIsReportedAsB02Revision() throws Exception {
+        var response = review("business_plan", "B", "B02", "fail", "revision");
+        var finding = (tools.jackson.databind.node.ObjectNode) response.path("findings").get(1);
+        finding.put("message", "지출 항목 합계 8,550,000원과 재원 합계 6,600,000원이 총사업비 8,400,000원과 일치하지 않습니다.");
+
+        var result = service(response).analyze(document("plan"));
+
+        assertEquals(InspectionStatus.RECOMMEND, result.status());
+        assertEquals("B02", result.findings().getFirst().id());
     }
 
     @Test void optionalB05AdviceIsVisibleWithoutBlockingPass() throws Exception {
@@ -83,7 +112,7 @@ class OpenAiDocumentAnalysisServiceTest {
             var result = service(review("business_plan", "B", id, "advisory", "review")).analyze(document("plan"));
             assertEquals("OPENAI_INVALID_RESULT", result.findings().getFirst().id());
         }
-        var result = service(review("goods_purchase_contract", "C", "C05", "advisory", "review"))
+        var result = service(review("goods_purchase_contract", "CT-", "CT-05", "advisory", "review"))
                 .analyze(document("contract"));
         assertEquals("OPENAI_INVALID_RESULT", result.findings().getFirst().id());
     }
@@ -117,11 +146,21 @@ class OpenAiDocumentAnalysisServiceTest {
         assertEquals("OPENAI_INVALID_RESULT", result.findings().getFirst().id());
     }
 
-    @Test void rejectsDuplicateRuleIdsEvenWhenArrayContainsSixFindings() throws Exception {
-        JsonNode duplicate = review("goods_purchase_contract", "C", null, "pass", "review");
-        ((tools.jackson.databind.node.ObjectNode) duplicate.path("findings").get(5)).put("rule_id", "C01");
+    @Test void rejectsDuplicateRuleIdsEvenWhenArrayContainsEveryContractFinding() throws Exception {
+        JsonNode duplicate = review("goods_purchase_contract", "CT-", null, "pass", "review");
+        ((tools.jackson.databind.node.ObjectNode) duplicate.path("findings").get(6)).put("rule_id", "CT-01");
 
         var result = service(duplicate).analyze(document("contract"));
+
+        assertEquals(InspectionStatus.UNVERIFIABLE, result.status());
+        assertEquals("OPENAI_INVALID_RESULT", result.findings().getFirst().id());
+    }
+
+    @Test void rejectsLegacyContractIdsInsteadOfTreatingThemAsPassing() throws Exception {
+        JsonNode legacy = review("goods_purchase_contract", "CT-", null, "pass", "review");
+        ((tools.jackson.databind.node.ObjectNode) legacy.path("findings").get(0)).put("rule_id", "C01");
+
+        var result = service(legacy).analyze(document("contract"));
 
         assertEquals(InspectionStatus.UNVERIFIABLE, result.status());
         assertEquals("OPENAI_INVALID_RESULT", result.findings().getFirst().id());
@@ -147,7 +186,7 @@ class OpenAiDocumentAnalysisServiceTest {
         }
 
         assertEquals(Set.of("B01", "B02", "B03", "B04", "B05", "B06"), ids(templates.path("business_plan")));
-        assertEquals(Set.of("C01", "C02", "C03", "C04", "C05", "C06"), ids(templates.path("goods_purchase_contract")));
+        assertEquals(Set.of("CT-01", "CT-02", "CT-03", "CT-04", "CT-05", "CT-06", "CT-07"), ids(templates.path("goods_purchase_contract")));
     }
 
     @Test void parsesStructuredOutputOnlyWhenResponseIsCompleted() throws Exception {
@@ -199,7 +238,8 @@ class OpenAiDocumentAnalysisServiceTest {
         root.put("overall_status", issueId == null ? "pass" : "revision");
         root.put("note", "AI 사전검수이며 담당자 최종 승인 필요");
         var findings = root.putArray("findings");
-        for (int i = 1; i <= 6; i++) {
+        int ruleCount = "CT-".equals(prefix) ? 7 : 6;
+        for (int i = 1; i <= ruleCount; i++) {
             String id = prefix + "0" + i;
             var finding = findings.addObject();
             finding.put("rule_id", id);
