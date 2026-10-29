@@ -27,3 +27,6 @@ dist-ssr
 backend/.gradle/
 backend/build/
 backend/uploads/
+
+.claude/settings.local.json
+design/out/
