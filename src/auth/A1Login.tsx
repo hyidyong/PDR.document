@@ -7,6 +7,7 @@ import { setSessionUser } from '../store/sessionStore'
 import { A2RoleSelect } from './A2RoleSelect'
 import { ReadyNotice } from './ReadyNotice'
 import './A1Login.css'
+import './stickyHeader.css'
 
 type FieldErrors = { email?: string; password?: string }
 
