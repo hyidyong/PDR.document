@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button, FileIcon } from '../components/common'
 import type { CheckScreenProps, CheckStatus } from './checkModel'
 import { documentIds as ids, documentLabels, documentStatusLabel } from './checkModel'
@@ -8,8 +8,9 @@ const resultText: Record<CheckStatus, string> = { pass: '통과', recommend: '�
 
 export function CheckScreenLayout({ activeId, documents, checkingId, current, passedCount, onTabChange, onReupload, onFileSelect, isResubmitting, editableIds = [], checkRound, checkTime }: CheckScreenProps) {
   const finding = current?.findings ?? []
-  const [previewPage, setPreviewPage] = useState(1)
-  useEffect(() => setPreviewPage(1), [current?.file])
+  const [preview, setPreview] = useState<{ file?: File; page: number }>({ file: current?.file, page: 1 })
+  const previewPage = preview.file === current?.file ? preview.page : 1
+  const setPreviewPage = (page: number) => setPreview({ file: current?.file, page })
   const isChecking = checkingId === activeId
   const uploadedAt = current?.checkedAt.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
   const canEditActive = !isResubmitting || editableIds.includes(activeId)

@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test:deadline": "node --test scripts/project-deadline.test.mjs",
     "test:session": "node --test scripts/session-access.test.mjs",
+    "test:checklist": "node --test scripts/checklist-criteria.test.mjs",
     "test:supabase": "node scripts/supabase-smoke-test.mjs",
     "preview": "vite preview"
   },

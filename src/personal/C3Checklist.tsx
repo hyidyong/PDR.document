@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button, CheckIcon, FileIcon, PencilIcon, SparklesIcon } from '../components/common'
 import { formatMonthDay, ruleGroupLabels } from './personalMock'
 import type { Criteria, RuleGroupId } from './personalMock'
+import { canStartChecklist } from './checklistCriteria'
 
 type EditTarget = 'docs' | RuleGroupId | null
 const groupIds: RuleGroupId[] = ['writing', 'file', 'submit']
@@ -27,6 +28,7 @@ function safeSourceUrl(value?: string | null) {
 
 export function C3Checklist({ criteria, sourceDate, sourceText, onChange, onStart }: { criteria: Criteria; sourceDate: Date; sourceText: string; onChange: (criteria: Criteria) => void; onStart: () => void }) {
   const [editing, setEditing] = useState<EditTarget>(null)
+  const canStart = canStartChecklist(criteria)
   const toggle = (target: EditTarget) => setEditing((current) => current === target ? null : target)
   const updateDoc = (index: number, key: 'name' | 'note', value: string) => onChange({ ...criteria, docs: criteria.docs.map((doc, i) => i === index ? { ...doc, [key]: value } : doc) })
   const updateRule = (group: RuleGroupId, index: number, value: string) => onChange({ ...criteria, rules: { ...criteria.rules, [group]: criteria.rules[group].map((rule, i) => i === index ? { ...rule, text: value } : rule) } })
@@ -40,6 +42,7 @@ export function C3Checklist({ criteria, sourceDate, sourceText, onChange, onStar
       <div className="personal-content">
         <section className="personal-card c3-docs">
           <div className="c3-docs__head"><div><span>제출해야 할 서류</span><h2>서류 {criteria.docs.length}개</h2></div><EditButton active={editing === 'docs'} label="제출 서류" onClick={() => toggle('docs')} /></div>
+          {!canStart && <p className="personal-error" role="status">생성된 서류가 없습니다</p>}
           <div className="c3-doc-tiles">{criteria.docs.map((doc, index) => <div className="c3-doc-tile" key={index}>
             <span className="c3-doc-tile__number">{String(index + 1).padStart(2, '0')}</span>
             {editing === 'docs'
@@ -74,7 +77,7 @@ export function C3Checklist({ criteria, sourceDate, sourceText, onChange, onStar
 
         <div className="personal-bottom-row">
           <span className="personal-hint"><SparklesIcon />고친 기준은 이번 점검에 바로 반영돼요</span>
-          <Button size="large" onClick={() => { setEditing(null); onStart() }}>이대로 점검 시작</Button>
+          <Button disabled={!canStart} size="large" onClick={() => { setEditing(null); onStart() }}>이대로 점검 시작</Button>
         </div>
       </div>
 
