@@ -7,6 +7,7 @@
 .admin-header { gap: 48px; }
 .admin-header nav { display: flex; gap: 8px; }
 .admin-header__search { align-items: center; background: var(--color-surface-muted); border-radius: 8px; color: var(--color-text-secondary); display: flex; gap: 8px; height: 40px; margin-left: auto; padding: 0 14px; width: 300px; }
+.admin-header .notify-bell { margin: 0 -24px; }
 .admin-header__search input { background: transparent; border: 0; color: var(--color-text-primary); flex: 1; font-size: 13px; min-width: 0; outline: 0; }
 
 /* Page header */
@@ -379,6 +380,16 @@
 .d1-avatar { align-items: center; background: var(--color-surface-muted); border-radius: 999px; color: var(--color-text-secondary); display: flex; font-size: 12px; font-weight: 600; height: 28px; justify-content: center; width: 28px; }
 .d1-dots { align-items: center; background: none; border: 0; border-radius: 6px; color: var(--color-text-secondary); cursor: pointer; display: flex; height: 28px; justify-content: center; width: 28px; }
 .d1-dots:hover { background: var(--color-surface-muted); }
+
+/* D12 프로젝트 목록 (reuses the D1 project rows) */
+.d12-list { padding-top: 8px; }
+.d12-list .d1-project:first-child { border-top: 0; }
+
+/* D11 전체 신청자 (reuses the D5 toolbar and table) */
+.admin-project-filter { align-items: center; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; color: var(--color-text-secondary); display: inline-flex; gap: 6px; height: 40px; padding: 0 12px; }
+.admin-project-filter select { appearance: none; background: none; border: 0; color: var(--color-text-primary); cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; outline: 0; }
+.admin-project-filter:focus-within { border-color: var(--color-brand); }
+.d11-col-project { width: 280px; }
 
 /* D10 서류 현황 (reuses the D1 card and table) */
 .d10-col-progress { width: 240px; }

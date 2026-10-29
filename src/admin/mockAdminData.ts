@@ -94,12 +94,37 @@ export const mockApplicants: AdminApplicant[] = rows.map(([name, studentId, stat
 export const clubNames: Record<string, string> = Object.fromEntries(rows.map((row, index) => [toId(index), row[6]]))
 
 // D1 담당자 홈 only: the two other 진행 중 프로젝트 from the design. They have no screens, so their counts are fixed.
-export type OtherProject = { name: string; org: string; total: number; submitted: number; pending: number; revision: number; approved: number; deadlineAt: string }
+export type OtherProject = { id: string; name: string; org: string; total: number; submitted: number; pending: number; revision: number; approved: number; deadlineAt: string }
 export const otherProjects: OtherProject[] = [
-  { name: '교내 연구 활동비 정산', org: '연구처', total: 15, submitted: 8, pending: 3, revision: 0, approved: 5, deadlineAt: '2026-11-05T23:59:59+09:00' },
-  { name: '해외봉사 활동 계획서', org: '국제교류처', total: 20, submitted: 5, pending: 0, revision: 0, approved: 5, deadlineAt: '2026-11-10T23:59:59+09:00' },
+  { id: 'research-2026', name: '교내 연구 활동비 정산', org: '연구처', total: 15, submitted: 8, pending: 3, revision: 0, approved: 5, deadlineAt: '2026-11-05T23:59:59+09:00' },
+  { id: 'volunteer-2026', name: '해외봉사 활동 계획서', org: '국제교류처', total: 20, submitted: 5, pending: 0, revision: 0, approved: 5, deadlineAt: '2026-11-10T23:59:59+09:00' },
 ]
 export const adminProjectOrg = '창업지원단'
+
+// D11 전체 신청자: rows for the two fixed projects above, matching their counts (submitted = pending + revision + approved, the rest 미제출).
+// They have no 서류 data, so D11 cannot open them on D6.
+export type OtherProjectApplicant = { key: string; projectName: string; name: string; studentId: string; status: AdminStatus; lastSubmittedAt: string | null }
+const otherNames = ['김하린', '박지호', '이수아', '최도윤', '정예준', '강서윤', '조하준', '윤지아', '장시우', '임채원', '한유나', '오건우', '서은우', '신다인', '권민서', '황준우', '안서아', '송지안', '류태민', '전하윤', '홍승현', '고나은', '문도현', '양소율', '손주원', '배시아', '백준혁', '허윤서', '남지율', '심재윤', '노하은', '하서진', '곽민준', '성예린', '차은호']
+export const otherProjectApplicants: OtherProjectApplicant[] = otherProjects.flatMap((project, projectIndex) => {
+  const statuses: AdminStatus[] = [
+    ...Array<AdminStatus>(project.pending).fill('SUBMITTED'),
+    ...Array<AdminStatus>(project.revision).fill('NEEDS_REVISION'),
+    ...Array<AdminStatus>(project.approved).fill('APPROVED'),
+    ...Array<AdminStatus>(project.total - project.submitted).fill('DRAFT'),
+  ]
+  return statuses.map((status, index) => {
+    const nameIndex = (projectIndex * project.total + index) % otherNames.length
+    const day = 27 - Math.floor(index / 3)
+    return {
+      key: `${project.name}-${index}`,
+      projectName: project.name,
+      name: otherNames[nameIndex],
+      studentId: `2024${String(3100 + projectIndex * 200 + index * 7).padStart(4, '0')}`,
+      status,
+      lastSubmittedAt: status === 'DRAFT' ? null : `2026-10-${String(day).padStart(2, '0')}T${String(9 + (index % 9)).padStart(2, '0')}:${String((index * 13) % 60).padStart(2, '0')}`,
+    }
+  })
+})
 // 검토 대기 on D1: submitted and waiting for the 담당자 (보완 필요 and 승인 are counted separately).
 export const pendingStatuses: AdminStatus[] = ['SUBMITTED', 'SUBMITTED_INCOMPLETE', 'REVIEW_PENDING']
 

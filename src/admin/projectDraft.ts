@@ -136,6 +136,7 @@ export function toProjectInput(draft: ProjectDraft): NewProjectInput {
     slug: draft.slug,
     rosterMode: draft.rosterMode,
     rosterCount: draft.rosterMode === 'list' ? validRoster(draft).length : 0,
+    roster: draft.rosterMode === 'list' ? validRoster(draft).map(({ id, name, studentId, email }) => ({ id, name, studentId, email })) : [],
     guide: draft.guide,
     documents: draft.documents.filter((doc) => doc.name.trim()).map((doc) => ({ name: doc.name.trim(), required: doc.required, formFileName: doc.formFile?.name ?? null, note: doc.note.trim() })),
   }

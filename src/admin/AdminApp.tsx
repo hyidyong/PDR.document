@@ -10,6 +10,10 @@ import { AdminHeader } from './AdminHeader'
 import type { AdminMenu } from './AdminHeader'
 import { D1Home } from './D1Home'
 import { D10DocumentStatus } from './D10DocumentStatus'
+import { D11AllApplicants } from './D11AllApplicants'
+import { D12ProjectList } from './D12ProjectList'
+import { projectApplicants, projectView, summarizeProjects } from './projectSummary'
+import { showNotice } from '../store/noticeStore'
 import { D5Dashboard } from './D5Dashboard'
 import type { DashboardFilter, DashboardSort } from './D5Dashboard'
 import { D6ApplicantDetail } from './D6ApplicantDetail'
@@ -36,11 +40,12 @@ export function AdminApp({ deadlineAt, onExit }: { deadlineAt?: string | null; o
 
 function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onExit: () => void }) {
   const { loading, project: storedProject, applicants, eventsById, createdProjects, createProject, requestRevision, approve, cancelApproval } = useAdmin()
-  // 홈 = D1, 프로젝트·신청자 = D5 (D6~D9 open on top of it; the header keeps the menu it came from), 서류 관리 = D10.
+  // 홈 = D1, 프로젝트 = D12 목록 → 프로젝트별 D5 (projectId), 신청자 = D11, 서류 관리 = D10. D6~D9 open on top; the header keeps the menu it came from.
   // menu, the open 신청자 and D7 are recorded in the browser history (src/store/navHistory.ts); entering by 뒤로가기 restores them.
   const [initialNav] = useState(() => currentNav()?.admin ?? defaultAdminNav)
   const [menu, setMenu] = useState<AdminMenu>(initialNav.menu)
   const [revisionOpen, setRevisionOpen] = useState(initialNav.revision)
+  const [projectId, setProjectId] = useState<string | undefined>(initialNav.projectId)
   // 새 프로젝트 만들기: the step is in the history; the draft stays here so [이전]/[다음] and 뒤로가기 keep what was typed.
   const [wizardStep, setWizardStep] = useState<WizardStep | undefined>(initialNav.wizardStep)
   const [draft, setDraft] = useState(emptyDraft)
@@ -68,23 +73,30 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
     return () => { active = false }
   }, [currentId])
 
-  const show = (next: AdminNav) => { setMenu(next.menu); setOpenId(next.openId); setRevisionOpen(next.revision); setWizardStep(next.wizardStep); setConfirmingApproval(false); setDownloadOpen(false) }
+  const show = (next: AdminNav) => { setMenu(next.menu); setOpenId(next.openId); setRevisionOpen(next.revision); setWizardStep(next.wizardStep); setProjectId(next.projectId); setConfirmingApproval(false); setDownloadOpen(false) }
   const go = (next: AdminNav) => { show(next); pushNav({ ...(currentNav() ?? { screen: 'admin' }), admin: next }) }
   usePopNav((state) => { if (state?.screen === 'admin') show(state.admin ?? defaultAdminNav) })
 
-  const goHome = () => go({ menu, openId: null, revision: false })
+  const mainId = project?.id ?? ''
+  const goHome = () => go({ menu, openId: null, revision: false, projectId })
   const openMenu = (next: AdminMenu) => go({ menu: next, openId: null, revision: false })
-  const openProject = (tab: DashboardFilter['tab'] = 'ALL') => { openMenu('project'); setFilter({ ...filter, tab, page: 1 }) }
-  const openApplicant = (applicantId: string) => go({ menu: menu === 'home' ? 'project' : menu, openId: applicantId, revision: false })
+  // A project's D5; switching to another project starts with a clean filter and 선택.
+  const openProject = (id = mainId, tab: DashboardFilter['tab'] = 'ALL') => {
+    if (id !== projectId) setSelected(new Set())
+    setFilter({ ...filter, tab, query: id === projectId ? filter.query : '', page: 1 })
+    go({ menu: 'project', openId: null, revision: false, projectId: id })
+  }
+  // D6~D9 exist only for 2026 창업동아리, so from 홈 they open under its D5.
+  const openApplicant = (applicantId: string) => go({ menu: menu === 'home' ? 'project' : menu, openId: applicantId, revision: false, projectId: menu === 'home' ? mainId : projectId })
   // 이전/다음 신청자 replaces the entry, so 뒤로가기 from D6 returns to the list.
   const move = (step: number) => {
-    const next = { menu, openId: sorted[(index + step + sorted.length) % sorted.length].applicantId, revision: false }
+    const next = { menu, openId: sorted[(index + step + sorted.length) % sorted.length].applicantId, revision: false, projectId }
     show(next)
     replaceNav({ ...(currentNav() ?? { screen: 'admin' }), admin: next })
   }
   // D7 opens as its own entry; closing it (취소 or 보내기) goes back to that D6 entry.
   const changeRevision = (open: boolean) => {
-    if (open) go({ menu, openId, revision: true })
+    if (open) go({ menu, openId, revision: true, projectId })
     else if (currentNav()?.admin?.revision) window.history.back()
     else setRevisionOpen(false)
   }
@@ -112,6 +124,11 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
     }
   }
 
+  // 프로젝트 menu: the chosen project's D5, or D12 when none is chosen (or it no longer exists, e.g. after ?reset=1).
+  const openView = project && projectId ? projectView(projectId, project, createdProjects) : null
+  const viewRows = useMemo(() => (project && openView ? (openView.id === project.id ? sorted : [...projectApplicants(openView.id, project, applicants, createdProjects)].sort(comparators[filter.sort])) : []), [project, openView, sorted, applicants, createdProjects, filter.sort])
+  const openRow = (applicantId: string) => (openView?.id === mainId ? openApplicant(applicantId) : showNotice(`${openView?.name ?? '이 프로젝트'}의 신청자 상세는 준비 중이에요`))
+
   const currentDocuments = current && documents?.applicantId === current.applicantId ? documents.data : null
   const detail = () => {
     if (!project || !current || !currentDocuments) return null
@@ -123,7 +140,7 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
   }
 
   return <div className="admin-app">
-    <AdminHeader active={menu} onExit={onExit} onNavigate={openMenu} />
+    <AdminHeader active={menu} onExit={onExit} onNavigate={openMenu} onOpenApplicant={openApplicant} />
     <ReadyNotice />
     {SHOW_MOCK_BANNER && <div className="admin-integration-notice" role="status"><strong>디자인 미리보기</strong> 관리자 API가 아직 연결되지 않아 아래 현황·보완 요청·승인 동작은 mock 데이터로만 표시됩니다.</div>}
     {loading || !project
@@ -133,11 +150,15 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
       : current
         ? detail()
         : menu === 'home'
-          ? <D1Home applicants={applicants} createdProjects={createdProjects} onCreateProject={openWizard} onOpenApplicant={openApplicant} onOpenProject={openProject} project={project} />
+          ? <D1Home applicants={applicants} createdProjects={createdProjects} onCreateProject={openWizard} onOpenApplicant={openApplicant} onOpenProject={openProject} onOpenProjectList={() => openMenu('project')} project={project} />
           : menu === 'documents'
             ? <D10DocumentStatus applicants={applicants} onOpenProject={() => openProject()} project={project} />
-            : <D5Dashboard applicants={sorted} filter={filter} onDownload={() => setDownloadOpen(true)} onFilterChange={setFilter} onOpen={openApplicant} onSelectedChange={setSelected} project={project} selected={selected} />}
-    {downloadOpen && project && <D8DownloadModal applicants={sorted} onClose={() => setDownloadOpen(false)} project={project} selected={selected} />}
+          : menu === 'applicants'
+            ? <D11AllApplicants applicants={applicants} createdProjects={createdProjects} onOpenApplicant={openApplicant} project={project} />
+          : openView
+            ? <D5Dashboard applicants={viewRows} filter={filter} key={openView.id} onDownload={() => setDownloadOpen(true)} onFilterChange={setFilter} onOpen={openRow} onSelectedChange={setSelected} project={openView} selected={selected} />
+            : <D12ProjectList onCreateProject={openWizard} onOpenProject={(id) => openProject(id)} projects={summarizeProjects(project, applicants, createdProjects)} />}
+    {downloadOpen && openView && <D8DownloadModal applicants={viewRows} onClose={() => setDownloadOpen(false)} project={openView} selected={selected} />}
     {confirmingApproval && current && <AdminConfirmDialog
       busy={approving}
       confirmLabel="승인하기"

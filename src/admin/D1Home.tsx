@@ -3,7 +3,9 @@ import type { AdminProject, CreatedProject } from '../api/adminApi'
 import { showNotice } from '../store/noticeStore'
 import { Button, CheckIcon, ChevronDownIcon, ChevronRightIcon, StatusBadge } from '../components/common'
 import { ArrowRightIcon, ClockIcon, EllipsisIcon, FolderIcon, MessageIcon } from './adminIcons'
-import { adminProjectOrg, adminStatusBadge, adminStatusLabels, otherProjects, pendingStatuses } from './mockAdminData'
+import { ProjectRowItem } from './D12ProjectList'
+import { summarizeProjects } from './projectSummary'
+import { adminStatusBadge, adminStatusLabels } from './mockAdminData'
 import type { AdminApplicant, AdminStatus } from './mockAdminData'
 
 const RECENT_COUNT = 5
@@ -22,12 +24,10 @@ function PlusIcon() {
   return <svg aria-hidden="true" fill="none" height="16" viewBox="0 0 24 24" width="16"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" /></svg>
 }
 
-type ProjectRow = { key: string; name: string; org: string; total: number; submitted: number; pending: number; deadlineAt: string; onOpen: () => void }
-
-function CardHead({ title, count, extra }: { title: string; count?: string; extra?: ReactNode }) {
+function CardHead({ title, count, extra, onMore = () => showNotice() }: { title: string; count?: string; extra?: ReactNode; onMore?: () => void }) {
   return <div className="d1-card__head">
     <div className="d1-card__title"><h2>{title}</h2>{count && <span className="d1-card__count">{count}</span>}{extra}</div>
-    <button className="d1-more" onClick={() => showNotice()} type="button">전체보기<ArrowRightIcon width={16} height={16} /></button>
+    <button className="d1-more" onClick={onMore} type="button">전체보기<ArrowRightIcon width={16} height={16} /></button>
   </div>
 }
 
@@ -42,35 +42,31 @@ function AiSummary({ applicant }: { applicant: AdminApplicant }) {
 }
 
 // D1 담당자 홈. The 2026 창업동아리 numbers come from the live mock state (so 보완 요청·승인 on D6~D9 show up here);
-// the other two projects are fixed design data and only show a 준비 중 notice when opened.
-// createdProjects (새 프로젝트 만들기) are listed right after 2026 창업동아리, newest first; they have no screens yet.
-export function D1Home({ project, applicants, createdProjects, onCreateProject, onOpenProject, onOpenApplicant }: {
+// the other projects (fixed design data, and those made with 새 프로젝트 만들기) come from projectSummary.
+// Every project opens its own D5 (onOpenProject); 진행 중 프로젝트 and 전체보기 open D12 프로젝트 목록.
+export function D1Home({ project, applicants, createdProjects, onCreateProject, onOpenProject, onOpenProjectList, onOpenApplicant }: {
   project: AdminProject
   createdProjects: CreatedProject[]
   onCreateProject: () => void
   applicants: AdminApplicant[]
-  onOpenProject: (tab?: 'ALL' | AdminStatus) => void
+  onOpenProject: (projectId: string, tab?: 'ALL' | AdminStatus) => void
+  onOpenProjectList: () => void
   onOpenApplicant: (applicantId: string) => void
 }) {
   const now = new Date()
-  const count = (statuses: AdminStatus[]) => applicants.filter((applicant) => statuses.includes(applicant.status)).length
-  const main: ProjectRow = {
-    key: project.id, name: project.name, org: adminProjectOrg, total: applicants.length, deadlineAt: project.deadlineAt ?? '',
-    submitted: applicants.filter((applicant) => applicant.status !== 'DRAFT').length, pending: count(pendingStatuses), onOpen: () => onOpenProject(),
-  }
-  const created: ProjectRow[] = [...createdProjects].reverse().map((item) => ({ key: item.id, name: item.name, org: item.org, total: item.rosterCount, submitted: 0, pending: 0, deadlineAt: item.deadlineAt, onOpen: () => showNotice('새로 만든 프로젝트의 현황 화면은 준비 중이에요') }))
-  const projects: ProjectRow[] = [main, ...created, ...otherProjects.map((other) => ({ ...other, key: other.name, onOpen: () => showNotice() }))]
-  const pending = main.pending + otherProjects.reduce((sum, other) => sum + other.pending, 0)
-  const revision = count(['NEEDS_REVISION']) + otherProjects.reduce((sum, other) => sum + other.revision, 0)
-  const approved = count(['APPROVED']) + otherProjects.reduce((sum, other) => sum + other.approved, 0)
+  const projects = summarizeProjects(project, applicants, createdProjects)
+  const sum = (key: 'pending' | 'revision' | 'approved') => projects.reduce((total, item) => total + item[key], 0)
+  const pending = sum('pending')
+  const revision = sum('revision')
+  const approved = sum('approved')
   const deadlines = projects.filter((row) => row.deadlineAt && daysLeft(row.deadlineAt, now) >= 0).sort((a, b) => a.deadlineAt.localeCompare(b.deadlineAt)).slice(0, 2)
   const recent = applicants.filter((applicant) => applicant.lastSubmittedAt).sort((a, b) => (b.lastSubmittedAt ?? '').localeCompare(a.lastSubmittedAt ?? '')).slice(0, RECENT_COUNT)
 
   const stats: { label: string; value: number; unit: string; icon: ReactNode; brand?: boolean; onOpen: () => void }[] = [
-    { label: '진행 중 프로젝트', value: projects.length, unit: '개', icon: <FolderIcon />, onOpen: () => showNotice() },
-    { label: '검토 대기', value: pending, unit: '건', icon: <ClockIcon />, brand: true, onOpen: () => onOpenProject() },
-    { label: '보완 요청 중', value: revision, unit: '건', icon: <MessageIcon />, onOpen: () => onOpenProject('NEEDS_REVISION') },
-    { label: '승인 완료', value: approved, unit: '건', icon: <CheckIcon />, onOpen: () => onOpenProject('APPROVED') },
+    { label: '진행 중 프로젝트', value: projects.length, unit: '개', icon: <FolderIcon />, onOpen: onOpenProjectList },
+    { label: '검토 대기', value: pending, unit: '건', icon: <ClockIcon />, brand: true, onOpen: () => onOpenProject(project.id) },
+    { label: '보완 요청 중', value: revision, unit: '건', icon: <MessageIcon />, onOpen: () => onOpenProject(project.id, 'NEEDS_REVISION') },
+    { label: '승인 완료', value: approved, unit: '건', icon: <CheckIcon />, onOpen: () => onOpenProject(project.id, 'APPROVED') },
   ]
 
   return <main className="admin-page admin-page--wide d1-page">
@@ -92,27 +88,15 @@ export function D1Home({ project, applicants, createdProjects, onCreateProject, 
 
     <div className="d1-middle">
       <section className="d1-card d1-projects">
-        <CardHead count={`${projects.length}개`} title="진행 중인 프로젝트" />
-        {projects.map((row) => {
-          const percent = row.total ? Math.round((row.submitted / row.total) * 100) : 0
-          return <button className="d1-project" key={row.key} onClick={row.onOpen} type="button">
-            <span className="d1-project__name"><strong>{row.name}</strong><span>{row.org} · 신청자 {row.total}명</span></span>
-            <span className="d1-project__due">{monthDay(row.deadlineAt)} 마감</span>
-            <span className="d1-progress">
-              <span className="d1-progress__label"><span><strong>{row.submitted}/{row.total}</strong> 제출</span><span>{percent}%</span></span>
-              <span className="d1-progress__track"><span style={{ width: `${percent}%` }} /></span>
-            </span>
-            <span className="d1-project__pending"><span className={`d1-chip ${row.pending ? 'is-brand' : ''}`}>대기 <strong>{row.pending}</strong></span></span>
-            <ChevronRightIcon className="d1-project__arrow" width={20} height={20} />
-          </button>
-        })}
+        <CardHead count={`${projects.length}개`} onMore={onOpenProjectList} title="진행 중인 프로젝트" />
+        {projects.map((row) => <ProjectRowItem key={row.id} onOpen={() => onOpenProject(row.id)} project={row} />)}
       </section>
 
       <section className="d1-card d1-deadlines">
-        <CardHead count={`${deadlines.length}개`} title="다가오는 마감" />
+        <CardHead count={`${deadlines.length}개`} onMore={onOpenProjectList} title="다가오는 마감" />
         {deadlines.map((row, index) => {
           const notSubmitted = row.total - row.submitted
-          return <button className="d1-deadline" key={row.key} onClick={row.onOpen} type="button">
+          return <button className="d1-deadline" key={row.id} onClick={() => onOpenProject(row.id)} type="button">
             <span className="d1-deadline__date"><span className={`d1-chip ${index === 0 ? 'is-brand' : ''}`}><strong>D-{daysLeft(row.deadlineAt, now)}</strong></span><strong>{monthDayWeek(row.deadlineAt)}</strong></span>
             <span className="d1-deadline__divider" />
             <span className="d1-deadline__text"><strong>{row.name}</strong><span>미제출 {notSubmitted}명 · 검토 대기 {row.pending}건</span></span>
