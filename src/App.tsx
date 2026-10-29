@@ -29,7 +29,8 @@ function App() {
   // A2 역할 선택 after login: 서류를 받아요 → D5 (anyone, for the demo), 서류를 내요 → 신청자 서류 점검.
   // chooseApplicant throws when the account has no 신청 정보; A2 shows it and stays open.
   const chooseRole = async (role: UserRole) => {
-    if (role === 'admin') { setSessionRole('admin'); setScreen('admin'); window.history.replaceState(null, '', '/admin'); return }
+    // The query is kept so /?reset=1 also resets the 시연 데이터 on this path.
+    if (role === 'admin') { setSessionRole('admin'); setScreen('admin'); window.history.replaceState(null, '', `/admin${window.location.search}`); return }
     const value = await chooseApplicant()
     setSessionRole('applicant', value.name); setApplicant(value); setHasVerifiedOnce(true); setVerified(true); setPage('check'); setScreen('applicant'); window.history.replaceState(null, '', '/')
   }
