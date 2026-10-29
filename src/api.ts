@@ -41,6 +41,14 @@ export async function signInAndResolveUser(email: string, password: string): Pro
   }
   catch (error) { await supabase.auth.signOut(); throw error }
 }
+// For the A1 → A2 flow: signs in and loads the project only; the role is chosen afterwards on A2.
+export async function signIn(email: string, password: string): Promise<ProjectView> {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error || !data.user) throw new ApiError('이메일 또는 비밀번호를 확인해 주세요.', 401)
+  try { return await request<ProjectView>(base) }
+  catch (error) { await supabase.auth.signOut(); throw error }
+}
+export const getCurrentApplicant = () => request<Applicant>(`${base}/applicants/me`)
 export const signOut = () => supabase.auth.signOut()
 export const getProject = () => request<ProjectView>(base)
 export const getCase = (id: string) => request<CaseView>(`${base}/applicants/${id}/submission`)

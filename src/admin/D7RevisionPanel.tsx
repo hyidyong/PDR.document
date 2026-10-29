@@ -4,8 +4,14 @@ import { InfoIcon, MessageIcon } from './adminIcons'
 
 const MAX_LENGTH = 500
 
-export function D7RevisionPanel({ comment, onCommentChange, onCancel, onSend }: { comment: string; onCommentChange: (comment: string) => void; onCancel: () => void; onSend: (comment: string) => void }) {
+export function D7RevisionPanel({ comment, onCommentChange, onCancel, onSend }: { comment: string; onCommentChange: (comment: string) => void; onCancel: () => void; onSend: (comment: string, attachAi: boolean) => Promise<void> }) {
   const [attachAi, setAttachAi] = useState(true)
+  const [sending, setSending] = useState(false)
+  // The panel unmounts once the request is sent, so sending only needs resetting on failure.
+  const send = async () => {
+    setSending(true)
+    try { await onSend(comment.trim(), attachAi) } catch (error) { console.error(error); setSending(false) }
+  }
   return <>
     <span className="admin-label"><MessageIcon className="admin-label__icon" width={14} height={14} />보완 요청 내용</span>
     <div className="admin-textarea admin-textarea--tall">
@@ -19,7 +25,7 @@ export function D7RevisionPanel({ comment, onCommentChange, onCancel, onSend }: 
     </label>
     <div className="admin-actions admin-actions--revision">
       <Button onClick={onCancel} variant="secondary">취소</Button>
-      <Button disabled={!comment.trim()} onClick={() => onSend(comment.trim())}>보완 요청 보내기</Button>
+      <Button disabled={!comment.trim() || sending} onClick={send}>보완 요청 보내기</Button>
     </div>
     <p className="admin-notice"><InfoIcon width={13} height={13} />신청자에게 이메일로 알려드려요.</p>
   </>

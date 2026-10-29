@@ -1,11 +1,14 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { AuthError, login, logout } from '../api/authApi'
 import { BrandLogo, Button, CheckIcon, FileIcon } from '../components/common'
-import { signInAndResolveUser } from '../api'
-import type { Applicant } from '../api'
+import { showNotice } from '../store/noticeStore'
+import { setSessionUser } from '../store/sessionStore'
+import { A2RoleSelect } from './A2RoleSelect'
+import { ReadyNotice } from './ReadyNotice'
 import './A1Login.css'
 
-const unavailableNotice = '회원가입과 비밀번호 찾기는 아직 연결되지 않았어요.'
+type FieldErrors = { email?: string; password?: string }
 
 function MailIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><rect height="14" rx="2" stroke="currentColor" strokeWidth="1.7" width="18" x="3" y="5" /><path d="m4 7 8 6 8-6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" /></svg>
@@ -19,31 +22,75 @@ function LinkIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" /></svg>
 }
 
+function BriefcaseIcon() {
+  return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><rect height="12" rx="2" stroke="currentColor" strokeWidth="1.7" width="18" x="3" y="7" /><path d="M9 7V5h6v2M3 12h18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" /></svg>
+}
+
 function ArrowRightIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M5 12h14m0 0-6-6m6 6-6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>
 }
 
-export function A1Login({ onApplicantAuthenticated, onAdminAuthenticated, onPersonalCheck }: { onApplicantAuthenticated: (applicant: Applicant, deadlineAt?: string | null) => void; onAdminAuthenticated: (deadlineAt?: string | null) => void; onPersonalCheck: () => void }) {
+// [사용자 데모] signs in with this 신청자 account from .env; the button is hidden when either value is empty.
+const demoApplicant = { email: import.meta.env.VITE_DEMO_APPLICANT_EMAIL ?? '', password: import.meta.env.VITE_DEMO_APPLICANT_PASSWORD ?? '' }
+const hasDemoApplicant = Boolean(demoApplicant.email && demoApplicant.password)
+
+// onAuthenticated leads to the A2 역할 선택 (App); onAdminDemo opens the 담당자 screens on mock data without logging in.
+// onApplicantDemo skips A2 and opens the 신청자 서류 점검 (App runs chooseApplicant); it throws if that fails.
+export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPersonalCheck }: {
+  onAuthenticated: (deadlineAt?: string | null) => void
+  onApplicantDemo: (deadlineAt?: string | null) => Promise<void>
+  onAdminDemo: () => void
+  onPersonalCheck: () => void
+}) {
+  const [view, setView] = useState<'login' | 'signup'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [errors, setErrors] = useState<FieldErrors>({})
   const [notice, setNotice] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const showNotice = () => setNotice(unavailableNotice)
+  // Blocks a second click/Enter before the disabled state renders.
+  const busy = useRef(false)
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!email.trim() || !password) { setNotice('이메일과 비밀번호를 모두 입력해 주세요.'); return }
-    setIsSubmitting(true); setNotice('')
+    if (busy.current) return
+    busy.current = true
+    setErrors({})
+    setNotice('')
+    setIsSubmitting(true)
     try {
-      const result = await signInAndResolveUser(email.trim(), password)
-      if (result.kind === 'admin') onAdminAuthenticated(result.project.deadlineAt)
-      else onApplicantAuthenticated(result.applicant, result.project.deadlineAt)
+      const result = await login(email, password)
+      setSessionUser(result.user)
+      onAuthenticated(result.project.deadlineAt)
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : '로그인하지 못했습니다.')
-    } finally { setIsSubmitting(false) }
+      if (error instanceof AuthError) setErrors({ [error.field]: error.message })
+      else setNotice(error instanceof Error ? error.message : '로그인하지 못했습니다.')
+    } finally { busy.current = false; setIsSubmitting(false) }
   }
+
+  const startApplicantDemo = async () => {
+    if (busy.current) return
+    busy.current = true
+    setErrors({})
+    setNotice('')
+    setIsSubmitting(true)
+    try {
+      const result = await login(demoApplicant.email, demoApplicant.password)
+      setSessionUser(result.user)
+      await onApplicantDemo(result.project.deadlineAt)
+    } catch (error) {
+      void logout()
+      setNotice(error instanceof Error ? error.message : '사용자 데모를 열지 못했습니다.')
+      busy.current = false
+      setIsSubmitting(false)
+    }
+  }
+
+  if (view === 'signup') return <A2RoleSelect onLogin={() => setView('login')} />
 
   return <main className="a1-screen">
     <header className="a1-header"><BrandLogo /></header>
+    <ReadyNotice />
     <div className="a1-body">
       <section className="a1-brand">
         <div className="a1-copy">
@@ -61,19 +108,33 @@ export function A1Login({ onApplicantAuthenticated, onAdminAuthenticated, onPers
         <form className="a1-card" noValidate onSubmit={handleSubmit}>
           <div className="a1-card__head"><h2>로그인</h2><p>모딧 계정으로 로그인해 주세요.</p></div>
           <div className="a1-fields">
-            <label className="a1-field"><span>이메일</span><span className="a1-input"><input autoComplete="email" onChange={(event) => setEmail(event.target.value)} placeholder="이메일 주소를 입력해 주세요" type="email" value={email} /><MailIcon /></span></label>
-            <label className="a1-field"><span>비밀번호</span><span className="a1-input"><input autoComplete="current-password" onChange={(event) => setPassword(event.target.value)} placeholder="비밀번호를 입력해 주세요" type="password" value={password} /><LockIcon /></span></label>
+            <label className="a1-field"><span>이메일</span><span className={`a1-input ${errors.email ? 'is-error' : ''}`}><input aria-describedby={errors.email ? 'a1-email-error' : undefined} aria-invalid={Boolean(errors.email)} autoComplete="email" onChange={(event) => { setEmail(event.target.value); setErrors({ ...errors, email: undefined }) }} placeholder="이메일 주소를 입력해 주세요" type="email" value={email} /><MailIcon /></span>
+              {errors.email && <span className="a1-field-error" id="a1-email-error" role="alert">{errors.email}</span>}</label>
+            <label className="a1-field"><span>비밀번호</span><span className={`a1-input ${errors.password ? 'is-error' : ''}`}><input aria-describedby={errors.password ? 'a1-password-error' : undefined} aria-invalid={Boolean(errors.password)} autoComplete="current-password" onChange={(event) => { setPassword(event.target.value); setErrors({ ...errors, password: undefined }) }} placeholder="비밀번호를 입력해 주세요" type="password" value={password} /><LockIcon /></span>
+              {errors.password && <span className="a1-field-error" id="a1-password-error" role="alert">{errors.password}</span>}</label>
           </div>
           <div className="a1-options">
             <label className="a1-keep"><input type="checkbox" /><span>로그인 상태 유지</span></label>
-            <button className="a1-text-button" onClick={showNotice} type="button">비밀번호 찾기</button>
+            <button className="a1-text-button" onClick={() => showNotice('비밀번호 찾기는 준비 중이에요')} type="button">비밀번호 찾기</button>
           </div>
           {notice && <p className="a1-notice" role="alert">{notice}</p>}
           <Button disabled={isSubmitting} size="large" type="submit">{isSubmitting ? '로그인 중...' : '로그인'}</Button>
-          <div className="a1-signup"><span>아직 계정이 없나요?</span><button className="a1-text-button a1-text-button--brand" onClick={showNotice} type="button">회원가입</button></div>
+          <div className="a1-signup"><span>아직 계정이 없나요?</span><button className="a1-text-button a1-text-button--brand" onClick={() => setView('signup')} type="button">회원가입</button></div>
 
           <div className="a1-demo">
             <div className="a1-demo__divider"><span>다른 이용 방법</span></div>
+            <div className={hasDemoApplicant ? 'a1-demo__row' : undefined}>
+              {hasDemoApplicant && <button className="a1-demo-button a1-demo-button--applicant" disabled={isSubmitting} onClick={() => void startApplicantDemo()} type="button">
+                <span className="a1-demo-button__icon"><FileIcon /></span>
+                <span className="a1-demo-button__text"><strong>사용자 데모</strong></span>
+                <ArrowRightIcon />
+              </button>}
+              <button className="a1-demo-button a1-demo-button--admin" disabled={isSubmitting} onClick={onAdminDemo} type="button">
+                <span className="a1-demo-button__icon"><BriefcaseIcon /></span>
+                <span className="a1-demo-button__text"><strong>담당자 데모</strong></span>
+                <ArrowRightIcon />
+              </button>
+            </div>
             <button className="a1-solo-link" onClick={onPersonalCheck} type="button">기관 링크 없이 혼자 점검하기 <ArrowRightIcon /></button>
           </div>
         </form>

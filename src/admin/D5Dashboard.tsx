@@ -1,14 +1,41 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, MouseEvent } from 'react'
+import type { AdminProject } from '../api/adminApi'
 import { Button, CheckIcon, ChevronDownIcon, ChevronRightIcon, StatusBadge } from '../components/common'
 import { ChevronLeftIcon, ClockIcon, DownloadIcon, LinkIcon, SearchIcon, SortIcon } from './adminIcons'
-import { adminProject, adminStatusBadge, adminStatusLabels, adminStatusOrder, formatShort } from './mockAdminData'
+import { adminStatusBadge, adminStatusLabels, adminStatusOrder, formatShort } from './mockAdminData'
 import type { AdminApplicant, AdminStatus } from './mockAdminData'
+import { showNotice } from '../store/noticeStore'
 import { formatDeadlineBadge } from '../utils/projectDeadline'
 
-export type DashboardFilter = { tab: 'ALL' | AdminStatus; query: string; page: number }
+export type DashboardSort = 'recent' | 'name'
+export type DashboardFilter = { tab: 'ALL' | AdminStatus; query: string; sort: DashboardSort; page: number }
 
 const PAGE_SIZE = 10
+const sortLabels: Record<DashboardSort, string> = { recent: '최근 제출순', name: '이름순' }
+
+function SortMenu({ value, onChange }: { value: DashboardSort; onChange: (sort: DashboardSort) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const closeOutside = (event: globalThis.MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false) }
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => { if (event.key === 'Escape') setOpen(false) }
+    document.addEventListener('mousedown', closeOutside)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => { document.removeEventListener('mousedown', closeOutside); document.removeEventListener('keydown', closeOnEscape) }
+  }, [open])
+  const choose = (sort: DashboardSort) => { onChange(sort); setOpen(false) }
+
+  return <div className="admin-sort-wrap" ref={ref}>
+    <button aria-expanded={open} aria-haspopup="listbox" className="admin-sort" onClick={() => setOpen(!open)} type="button"><SortIcon width={14} height={14} /><span>{sortLabels[value]}</span><ChevronDownIcon className={open ? 'is-flipped' : ''} width={14} height={14} /></button>
+    {open && <ul aria-label="정렬" className="admin-sort-menu" role="listbox">
+      {(Object.keys(sortLabels) as DashboardSort[]).map((sort) => <li aria-selected={sort === value} key={sort} role="option">
+        <button className={sort === value ? 'is-active' : ''} onClick={() => choose(sort)} type="button">{sortLabels[sort]}{sort === value && <CheckIcon width={14} height={14} />}</button>
+      </li>)}
+    </ul>}
+  </div>
+}
 
 function AiResult({ applicant }: { applicant: AdminApplicant }) {
   const { error, review } = applicant.aiSummary
@@ -26,8 +53,17 @@ function Checkbox({ checked, label, onToggle }: { checked: boolean; label: strin
   return <button aria-checked={checked} aria-label={label} className={`admin-checkbox ${checked ? 'is-checked' : ''}`} onClick={toggle} onKeyDown={(event) => event.stopPropagation()} role="checkbox" type="button">{checked && <CheckIcon width={12} height={12} />}</button>
 }
 
-export function D5Dashboard({ applicants, deadlineAt, filter, onFilterChange, onOpen }: { applicants: AdminApplicant[]; deadlineAt?: string | null; filter: DashboardFilter; onFilterChange: (filter: DashboardFilter) => void; onOpen: (applicantId: string) => void }) {
-  const [selected, setSelected] = useState<Set<string>>(() => new Set())
+// applicants arrive already sorted by filter.sort (AdminApp sorts them so D6 이전/다음 follows the same order).
+export function D5Dashboard({ project, applicants, filter, selected, onFilterChange, onSelectedChange, onOpen, onDownload }: {
+  project: AdminProject
+  applicants: AdminApplicant[]
+  filter: DashboardFilter
+  selected: Set<string>
+  onFilterChange: (filter: DashboardFilter) => void
+  onSelectedChange: (selected: Set<string>) => void
+  onOpen: (applicantId: string) => void
+  onDownload: () => void
+}) {
   const query = filter.query.trim()
   const searched = applicants.filter((applicant) => !query || applicant.name.includes(query) || applicant.studentId.includes(query))
   const visible = filter.tab === 'ALL' ? searched : searched.filter((applicant) => applicant.status === filter.tab)
@@ -41,29 +77,29 @@ export function D5Dashboard({ applicants, deadlineAt, filter, onFilterChange, on
     ...adminStatusOrder.map((status) => ({ key: status, label: adminStatusLabels[status], count: searched.filter((applicant) => applicant.status === status).length })),
   ]
 
-  const toggle = (applicantId: string) => setSelected((current) => {
-    const next = new Set(current)
+  const toggle = (applicantId: string) => {
+    const next = new Set(selected)
     if (next.has(applicantId)) next.delete(applicantId)
     else next.add(applicantId)
-    return next
-  })
-  const togglePage = () => setSelected((current) => {
-    const next = new Set(current)
+    onSelectedChange(next)
+  }
+  const togglePage = () => {
+    const next = new Set(selected)
     pageRows.forEach((applicant) => allOnPageSelected ? next.delete(applicant.applicantId) : next.add(applicant.applicantId))
-    return next
-  })
+    onSelectedChange(next)
+  }
   const openOnEnter = (event: KeyboardEvent, applicantId: string) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpen(applicantId) } }
   const rangeStart = visible.length ? (page - 1) * PAGE_SIZE + 1 : 0
 
   return <main className="admin-page admin-page--wide">
     <div className="admin-page-header">
       <div className="admin-page-header__text">
-        <div className="admin-breadcrumb"><span>프로젝트</span><ChevronRightIcon width={14} height={14} /><span className="is-current">{adminProject.name}</span></div>
-        <div className="admin-title-row"><h1>{adminProject.name}</h1><span className="admin-deadline"><ClockIcon width={14} height={14} />{formatDeadlineBadge(deadlineAt)}</span></div>
+        <div className="admin-breadcrumb"><span>프로젝트</span><ChevronRightIcon width={14} height={14} /><span className="is-current">{project.name}</span></div>
+        <div className="admin-title-row"><h1>{project.name}</h1><span className="admin-deadline"><ClockIcon width={14} height={14} />{formatDeadlineBadge(project.deadlineAt)}</span></div>
       </div>
       <div className="admin-header-actions">
-        <button className="admin-text-button" type="button"><LinkIcon width={16} height={16} />제출 링크 관리</button>
-        <Button variant="secondary"><DownloadIcon width={16} height={16} />ZIP 다운로드</Button>
+        <button className="admin-text-button" onClick={() => showNotice('제출 링크 관리는 준비 중이에요')} type="button"><LinkIcon width={16} height={16} />제출 링크 관리</button>
+        <Button onClick={onDownload} variant="secondary"><DownloadIcon width={16} height={16} />ZIP 다운로드</Button>
       </div>
     </div>
 
@@ -76,9 +112,9 @@ export function D5Dashboard({ applicants, deadlineAt, filter, onFilterChange, on
 
       <div className="admin-toolbar">
         <label className="admin-search"><SearchIcon width={16} height={16} /><input onChange={(event) => onFilterChange({ ...filter, query: event.target.value, page: 1 })} placeholder="이름, 학번으로 검색" value={filter.query} /></label>
-        <button className="admin-sort" type="button"><SortIcon width={14} height={14} /><span>최근 제출순</span><ChevronDownIcon width={14} height={14} /></button>
+        <SortMenu onChange={(sort) => onFilterChange({ ...filter, sort, page: 1 })} value={filter.sort} />
         <span className="admin-toolbar__spacer" />
-        {selected.size > 0 && <span className="admin-selection"><strong>{selected.size}명 선택됨</strong><button onClick={() => setSelected(new Set())} type="button">· 선택 해제</button></span>}
+        {selected.size > 0 && <span className="admin-selection"><strong>{selected.size}명 선택됨</strong><button onClick={() => onSelectedChange(new Set())} type="button">· 선택 해제</button></span>}
       </div>
 
       <section className="admin-table-card">

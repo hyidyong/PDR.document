@@ -1,0 +1,3 @@
+/* Same look as the A3 menu notice: lavender pill, brand text. */
+.ready-notice { left: 50%; pointer-events: none; position: fixed; top: 84px; transform: translateX(-50%); z-index: 50; }
+.ready-notice p { background: var(--color-lavender); border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, .08); color: var(--color-brand); font-size: 13px; font-weight: 600; margin: 0; padding: 10px 16px; white-space: nowrap; }
