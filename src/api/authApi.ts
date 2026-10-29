@@ -78,7 +78,7 @@ export async function login(email: string, password: string): Promise<LoginOutco
   return { project, user: { name: metadataName ?? trimmed.split('@')[0], email: authUser?.email ?? trimmed } }
 }
 
-/** Called when 서류를 내요 is picked on A2. */
+/** Called when the 사용자 card is picked on A2. */
 export async function chooseApplicant(): Promise<Applicant> {
   try {
     return await reachServer(getCurrentApplicant())

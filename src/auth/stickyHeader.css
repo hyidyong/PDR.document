@@ -1,0 +1,4 @@
+/* Keeps the top header visible while scrolling: the 신청자 AppHeader (components/common.tsx) and the 담당자 AdminHeader
+   both use .app-header. It lives here because components.css is a teammate file; A1Login imports it, so it loads for every screen.
+   z-index 15: above page menus and action bars (10), below dialogs (.check-overlay, 20). */
+.app-header { position: sticky; top: 0; z-index: 15; }

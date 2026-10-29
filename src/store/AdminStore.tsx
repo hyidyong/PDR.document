@@ -11,6 +11,8 @@ type AdminStore = {
   applicants: AdminApplicant[]
   eventsById: Record<string, AdminEvent[]>
   createdProjects: CreatedProject[]
+  notificationsReadAt: string | null
+  markNotificationsRead: () => Promise<void>
   createProject: (input: NewProjectInput) => Promise<CreatedProject>
   requestRevision: (applicantId: string, input: RevisionInput) => Promise<void>
   approve: (applicantId: string) => Promise<void>
@@ -34,18 +36,20 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [applicants, setApplicants] = useState<AdminApplicant[]>([])
   const [eventsById, setEventsById] = useState<Record<string, AdminEvent[]>>({})
   const [createdProjects, setCreatedProjects] = useState<CreatedProject[]>([])
+  const [notificationsReadAt, setNotificationsReadAt] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
     const reset = consumeResetParam()
     const load = async () => {
       if (reset) await adminApi.resetDemo()
-      const [nextProject, nextApplicants, nextEvents, nextCreated] = await Promise.all([adminApi.getProject(), adminApi.getApplicants(), adminApi.getAllEvents(), adminApi.getCreatedProjects()])
+      const [nextProject, nextApplicants, nextEvents, nextCreated, nextReadAt] = await Promise.all([adminApi.getProject(), adminApi.getApplicants(), adminApi.getAllEvents(), adminApi.getCreatedProjects(), adminApi.getNotificationsReadAt()])
       if (!active) return
       setProject(nextProject)
       setApplicants(nextApplicants)
       setEventsById(nextEvents)
       setCreatedProjects(nextCreated)
+      setNotificationsReadAt(nextReadAt)
       setLoading(false)
     }
     load().catch((error) => {
@@ -67,9 +71,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setCreatedProjects((current) => [...current, project])
     return project
   }, [])
+  const markNotificationsRead = useCallback(async () => setNotificationsReadAt(await adminApi.markNotificationsRead()), [])
   const cancelApproval = useCallback(async (applicantId: string) => apply(await adminApi.cancelApproval(applicantId)), [apply])
 
-  const value = useMemo(() => ({ loading, project, applicants, eventsById, createdProjects, createProject, requestRevision, approve, cancelApproval }), [loading, project, applicants, eventsById, createdProjects, createProject, requestRevision, approve, cancelApproval])
+  const value = useMemo(() => ({ loading, project, applicants, eventsById, createdProjects, createProject, notificationsReadAt, markNotificationsRead, requestRevision, approve, cancelApproval }), [loading, project, applicants, eventsById, createdProjects, createProject, notificationsReadAt, markNotificationsRead, requestRevision, approve, cancelApproval])
   return <AdminStoreContext.Provider value={value}>{children}</AdminStoreContext.Provider>
 }
 

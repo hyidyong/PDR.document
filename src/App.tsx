@@ -42,7 +42,7 @@ function App() {
   const navigate = (nextPage: MainPage) => { if (verified && nextPage !== page) { setPage(nextPage); pushNav({ screen: 'applicant', page: nextPage }) } }
   // The A1 entry was replaced by A2 at login, so after 로그아웃 this entry becomes A1 again and the rest are redirected by usePopNav.
   const logout = () => { void signOut(); clearSessionUser(); setVerified(false); setApplicant(null); setPage('home'); setScreen('login'); replaceNav({ screen: 'login' }, '/') }
-  // A2 역할 선택 after login: 서류를 받아요 → D1 (anyone, for the demo), 서류를 내요 → 신청자 서류 점검.
+  // A2 역할 선택 after login: both roles start on their home — 서류를 받아요 → D1 (anyone, for the demo), 서류를 내요 → 신청자 홈.
   // chooseApplicant throws when the account has no 신청 정보; A2 shows it and stays open.
   // fromLogin ([사용자 데모]) records A2 in place of A1 first, so 뒤로가기 goes to A2 as after a normal login.
   const chooseRole = async (role: UserRole, fromLogin = false) => {
@@ -50,7 +50,7 @@ function App() {
     if (role === 'admin') { setSessionRole('admin'); setScreen('admin'); pushNav({ screen: 'admin', admin: defaultAdminNav }, `/admin${window.location.search}`); return }
     const value = await chooseApplicant()
     if (fromLogin) replaceNav({ screen: 'role' }, '/')
-    setSessionRole('applicant', value.name); setApplicant(value); setHasVerifiedOnce(true); setVerified(true); setPage('check'); setScreen('applicant'); pushNav({ screen: 'applicant', page: 'check' }, '/')
+    setSessionRole('applicant', value.name); setApplicant(value); setHasVerifiedOnce(true); setVerified(true); setPage('home'); setScreen('applicant'); pushNav({ screen: 'applicant', page: 'home' }, '/')
   }
   if (screen === 'login') return <A1Login
     onAuthenticated={(projectDeadline) => { setDeadlineAt(resolveProjectDeadline(projectDeadline)); setScreen('role'); replaceNav({ screen: 'role' }) }}
