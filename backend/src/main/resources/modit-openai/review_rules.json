@@ -1,0 +1,33 @@
+{
+  "version": "1.2",
+  "policy": {
+    "scope": "형식, 필수항목, 문서 내부 일관성 확인. 법률적 유효성 및 사업 선정 적격성 확정 금지",
+    "unknown": "문서가 흐리거나 추출 실패 시 missing으로 단정하지 말고 needs_review 반환",
+    "require_evidence": true,
+    "final_decision": "담당자 최종 승인 필요"
+  },
+  "templates": {
+    "goods_purchase_contract": {
+      "label": "물품매매계약서",
+      "checks": [
+        {"id":"C01","type":"required_fields","fields":["계약 당사자(매도인/매수인)","계약 체결일","매매 목적물(품명/규격 또는 식별정보)","수량","대금 또는 산정방식","인도/납품 조건"],"severity":"revision"},
+        {"id":"C02","type":"arithmetic","rule":"단가×수량=품목별 금액, 품목별 합계=총액; 부가세 포함/별도 여부를 고려","severity":"revision"},
+        {"id":"C03","type":"date_consistency","rule":"계약일, 납품일, 대금 지급일 간 순서와 기재 일관성 점검(조건부 지급 허용)","severity":"review"},
+        {"id":"C04","type":"internal_consistency","rule":"당사자명·물품명·수량·금액이 본문/표/부속문서에서 상충하는지 확인","severity":"review"},
+        {"id":"C05","type":"signature_check","rule":"서명/날인란이 있는 경우 작성 또는 날인 여부를 점검하되, 전자계약 등 방식 차이는 확인필요 처리","severity":"review"},
+        {"id":"C06","type":"ambiguity","rule":"대금 지급조건, 납품장소 등 문서에 정한 조건이 상충하거나 불명확한 경우 해당 문구를 근거로 안내","severity":"review"}
+      ]
+    },
+    "business_plan": {
+      "label": "범용 사업계획서",
+      "checks": [
+        {"id":"B01","type":"required_fields","fields":["사업명","사업 목적/필요성","사업 대상 또는 수혜자","주요 추진내용","추진 일정","예산 또는 재원 계획","성과목표"],"severity":"revision"},
+        {"id":"B02","type":"arithmetic","rule":"예산 항목별 금액 합계와 총사업비 일치 여부, 구성비가 제시된 경우 합계 검증","severity":"revision"},
+        {"id":"B03","type":"date_consistency","rule":"사업기간과 세부 추진일정 간 모순/범위 이탈 확인","severity":"review"},
+        {"id":"B04","type":"internal_consistency","rule":"사업명, 사업기간, 목표, 예산의 실질적 모순을 확인한다. 공백·구두점·단위 접미사·동일 척도의 표기 차이는 의미가 같으면 pass다(예: 4.2/5와 4.2/5점). 실제 수치·척도·대상·기간이 다를 때만 근거를 제시한다. 단위나 문맥이 불명확하면 임의로 동등하다고 간주하지 말고 needs_review다.","severity":"review"},
+        {"id":"B05","type":"semantic","rule":"활동내용과 성과목표의 연결성과 측정 가능성을 확인한다. 연결성이 있고 목표를 해석할 수 있으면 pass다. 측정방법의 추가 구체화 등 선택적 개선 제안만 있는 경우 advisory로 반환하며 보완 필수나 확인 필요로 판정하지 않는다. 활동과 목표의 명백한 불일치 또는 판단에 필요한 정보 부족은 근거를 들어 needs_review다. 기관이 제시하지 않은 평가 기준을 추가하지 말고 정성적 판단을 확정 오류로 취급하지 않는다.","severity":"review"},
+        {"id":"B06","type":"admin_specific","rule":"기관별 요구 목차/양식/예산 제한은 관리자가 제공한 기준이 있을 때만 판단","severity":"review"}
+      ]
+    }
+  }
+}

@@ -70,4 +70,14 @@ class SubmissionFlowTest {
         assertEquals("SIZE_LIMIT", inspection.source());
         assertFalse(inspection.findings().isEmpty());
     }
+
+    @Test void retryingInspectionKeepsTheExistingDocumentVersion() {
+        service.upload(PROJECT, APPLICANT, "receipts", pdf("receipts.pdf"));
+
+        service.inspect(PROJECT, APPLICANT, "receipts");
+
+        assertEquals(1, service.documents(PROJECT, APPLICANT).get("receipts").size());
+        assertEquals(1, service.documents(PROJECT, APPLICANT).get("receipts").getFirst().version());
+        assertEquals(2, service.inspections(PROJECT, APPLICANT, "receipts").size());
+    }
 }

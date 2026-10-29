@@ -13,9 +13,18 @@ public final class Model {
     public record Applicant(String id, String projectId, String name, String studentId) {}
     public record DocumentVersion(String id, String requirementId, int version, String fileName,
                                   String contentType, long size, String storageKey, Instant uploadedAt) {}
-    public record Finding(String id, String message) {}
+    public record Finding(String id, String message, String kind, Integer page, Integer evidencePage,
+                          String rowNo, Object expected, Object actual, String source) {
+        public Finding(String id, String message) { this(id, message, null, null, null, null, null, null, null); }
+    }
     public record Inspection(String id, String documentId, String requirementId, int version,
-                             InspectionStatus status, String source, List<Finding> findings, Instant checkedAt) {}
+                             InspectionStatus status, String source, List<Finding> findings, Instant checkedAt,
+                             Map<String, Object> metadata) {
+        public Inspection(String id, String documentId, String requirementId, int version,
+                          InspectionStatus status, String source, List<Finding> findings, Instant checkedAt) {
+            this(id, documentId, requirementId, version, status, source, findings, checkedAt, Map.of());
+        }
+    }
     public record Feedback(String id, String author, String comment, List<String> targetRequirementIds,
                            Map<String, Integer> originalVersions, Instant createdAt) {}
     public record Approval(String id, ApprovalStatus status, String reviewer, Instant decidedAt) {}

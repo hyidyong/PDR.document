@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class SubmissionService {
     private static final long MAX_BYTES = 10L * 1024 * 1024;
-    private static final long MAX_AI_BYTES = 4L * 1024 * 1024;
+    private static final long MAX_AI_BYTES = 4_000_000L;
     private final InMemoryRepository repository;
     private final AiAnalysisService ai;
     private final FileStorage storage;
@@ -67,9 +67,9 @@ public class SubmissionService {
                 ? new AiAnalysisService.Result(InspectionStatus.UNVERIFIABLE,
                         List.of(new Finding("size-limit", "4MB를 초과한 PDF는 AI 분석을 진행할 수 없습니다.")),
                         "SIZE_LIMIT")
-                : ai.analyze(doc.requirementId(), doc.version());
+                : ai.analyze(doc);
         Inspection inspection = new Inspection(UUID.randomUUID().toString(), doc.id(), doc.requirementId(), doc.version(),
-                result.status(), result.source(), result.findings(), Instant.now());
+                result.status(), result.source(), result.findings(), Instant.now(), result.metadata());
         c.inspections.add(inspection);
         c.log(doc.version() == 1 ? "INSPECTION" : "REINSPECTION", doc.requirementId() + " v" + doc.version() + " " + result.status());
         return inspection;
