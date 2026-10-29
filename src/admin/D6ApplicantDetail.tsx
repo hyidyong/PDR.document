@@ -107,7 +107,8 @@ export function ApplicantPager({ position, total, onMove }: { position: number; 
   </>
 }
 
-export function D6ApplicantDetail({ project, applicant, documents, events, position, total, onBack, onMove, onApprove, onRequestRevision }: {
+// revisionOpen: whether the D7 보완 요청 panel is open. AdminApp owns it so D7 gets its own browser-history entry.
+export function D6ApplicantDetail({ project, applicant, documents, events, position, total, revisionOpen, onBack, onMove, onApprove, onRequestRevision, onRevisionOpenChange }: {
   project: AdminProject
   applicant: AdminApplicant
   documents: ApplicantDocuments
@@ -118,8 +119,10 @@ export function D6ApplicantDetail({ project, applicant, documents, events, posit
   onMove: (step: number) => void
   onApprove: () => void
   onRequestRevision: (comment: string, attachAi: boolean) => Promise<void>
+  revisionOpen: boolean
+  onRevisionOpenChange: (open: boolean) => void
 }) {
-  const [mode, setMode] = useState<'comment' | 'revision'>('comment')
+  const mode = revisionOpen ? 'revision' : 'comment'
   const [expanded, setExpanded] = useState(false)
   const [comment, setComment] = useState('')
 
@@ -128,8 +131,8 @@ export function D6ApplicantDetail({ project, applicant, documents, events, posit
   const lastOf = (kind: AdminEvent['kind']) => [...events].reverse().find((event) => event.kind === kind)
   const canDecide = applicant.status === 'SUBMITTED' || applicant.status === 'SUBMITTED_INCOMPLETE' || applicant.status === 'REVIEW_PENDING'
 
-  const startRevision = () => { setMode('revision'); setExpanded(true) }
-  const sendRevision = async (text: string, attachAi: boolean) => { await onRequestRevision(text, attachAi); setMode('comment'); setComment('') }
+  const startRevision = () => { onRevisionOpenChange(true); setExpanded(true) }
+  const sendRevision = async (text: string, attachAi: boolean) => { await onRequestRevision(text, attachAi); onRevisionOpenChange(false); setComment('') }
 
   return <main className="admin-page">
     <div className="admin-page-header">
@@ -177,7 +180,7 @@ export function D6ApplicantDetail({ project, applicant, documents, events, posit
               : !canDecide
                 ? <><span className="admin-label">담당자 의견</span><p className="admin-panel__note">신청자가 아직 서류를 제출하지 않았어요.</p><DecisionButtons disabled /></>
                 : mode === 'revision'
-                  ? <D7RevisionPanel comment={comment} onCancel={() => setMode('comment')} onCommentChange={setComment} onSend={sendRevision} />
+                  ? <D7RevisionPanel comment={comment} onCancel={() => onRevisionOpenChange(false)} onCommentChange={setComment} onSend={sendRevision} />
                   : <>
                       <span className="admin-label">담당자 의견</span>
                       <textarea aria-label="담당자 의견" className="admin-textarea" maxLength={500} onChange={(event) => setComment(event.target.value)} placeholder="보완이 필요한 내용을 적어주세요" value={comment} />

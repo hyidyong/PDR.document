@@ -12,8 +12,7 @@ const demoReviewer = { name: '박담당', email: 'admin@example.com' }
 
 // Reuses the shared .app-header styles; AppHeader itself is fixed to the applicant menu.
 // onExit is App's logout, which signs out of Supabase and returns to A1.
-// onSwitchRole (logged-in only, not 담당자 데모) returns to the A2 역할 선택.
-export function AdminHeader({ active, onNavigate, onExit, onSwitchRole }: { active: AdminMenu; onNavigate: (menu: AdminMenu) => void; onExit: () => void; onSwitchRole?: () => void }) {
+export function AdminHeader({ active, onNavigate, onExit }: { active: AdminMenu; onNavigate: (menu: AdminMenu) => void; onExit: () => void }) {
   const sessionUser = useSessionUser()
   const user = sessionUser?.role === 'admin' ? sessionUser : demoReviewer
 
@@ -23,6 +22,6 @@ export function AdminHeader({ active, onNavigate, onExit, onSwitchRole }: { acti
       {menus.map(({ label, menu }) => <button aria-current={menu === active ? 'page' : undefined} className={menu === active ? 'is-active' : ''} key={label} onClick={() => onNavigate(menu)} type="button">{label}</button>)}
     </nav>
     <label className="admin-header__search"><SearchIcon width={16} height={16} /><input aria-label="프로젝트, 신청자 검색" onKeyDown={(event) => { if (event.key === 'Enter') showNotice('검색은 준비 중이에요') }} placeholder="프로젝트, 신청자를 검색해보세요." /></label>
-    <A3ProfileMenu email={user.email} name={user.name} onLogout={onExit} onSwitch={onSwitchRole} roleLabel="담당자" switchLabel="사용자 모드로 전환" />
+    <A3ProfileMenu email={user.email} name={user.name} onLogout={onExit} roleLabel="담당자" />
   </header>
 }
