@@ -4,7 +4,7 @@
 import { ApiError, getProject as fetchProject, PROJECT_ID } from '../api'
 import type { ProjectView } from '../api'
 import { adminProject, clubNames, getIssues, mockApplicants, seedEvents, toLocalIso } from '../admin/mockAdminData'
-import type { AdminApplicant, AdminEvent, AdminIssue, AdminStatus } from '../admin/mockAdminData'
+import type { AdminApplicant, AdminEvent, AdminIssue, AdminStatus, RosterRow } from '../admin/mockAdminData'
 import { DEFAULT_PROJECT_DEADLINE } from '../utils/projectDeadline'
 
 // The server's ProjectView plus two fields only the admin screens use so far.
@@ -15,7 +15,8 @@ export type AdminChange ={ applicant: AdminApplicant; events: AdminEvent[] }
 export type RevisionInput = { comment: string; attachAi: boolean }
 /** 새 프로젝트 만들기 (D2~D4 마법사) 결과. Only the 담당자 screens use it; there is no 신청자 side yet. */
 export type NewProjectDocument = { name: string; required: boolean; formFileName: string | null; note: string }
-export type NewProjectInput = { name: string; org: string; deadlineAt: string; slug: string; rosterCount: number; rosterMode: 'list' | 'link'; guide: string; documents: NewProjectDocument[] }
+// roster: the registered 명단 rows (empty for 새로 받기). Optional so projects saved before it still load.
+export type NewProjectInput = { name: string; org: string; deadlineAt: string; slug: string; rosterCount: number; rosterMode: 'list' | 'link'; roster?: RosterRow[]; guide: string; documents: NewProjectDocument[] }
 export type CreatedProject = NewProjectInput & { id: string; createdAt: string }
 
 type AdminState = {

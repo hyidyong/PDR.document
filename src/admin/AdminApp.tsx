@@ -10,6 +10,7 @@ import { AdminHeader } from './AdminHeader'
 import type { AdminMenu } from './AdminHeader'
 import { D1Home } from './D1Home'
 import { D10DocumentStatus } from './D10DocumentStatus'
+import { D11AllApplicants } from './D11AllApplicants'
 import { D5Dashboard } from './D5Dashboard'
 import type { DashboardFilter, DashboardSort } from './D5Dashboard'
 import { D6ApplicantDetail } from './D6ApplicantDetail'
@@ -36,7 +37,7 @@ export function AdminApp({ deadlineAt, onExit }: { deadlineAt?: string | null; o
 
 function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onExit: () => void }) {
   const { loading, project: storedProject, applicants, eventsById, createdProjects, createProject, requestRevision, approve, cancelApproval } = useAdmin()
-  // 홈 = D1, 프로젝트·신청자 = D5 (D6~D9 open on top of it; the header keeps the menu it came from), 서류 관리 = D10.
+  // 홈 = D1, 프로젝트 = D5, 신청자 = D11, 서류 관리 = D10. D6~D9 open on top; the header keeps the menu it came from.
   // menu, the open 신청자 and D7 are recorded in the browser history (src/store/navHistory.ts); entering by 뒤로가기 restores them.
   const [initialNav] = useState(() => currentNav()?.admin ?? defaultAdminNav)
   const [menu, setMenu] = useState<AdminMenu>(initialNav.menu)
@@ -136,6 +137,8 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
           ? <D1Home applicants={applicants} createdProjects={createdProjects} onCreateProject={openWizard} onOpenApplicant={openApplicant} onOpenProject={openProject} project={project} />
           : menu === 'documents'
             ? <D10DocumentStatus applicants={applicants} onOpenProject={() => openProject()} project={project} />
+          : menu === 'applicants'
+            ? <D11AllApplicants applicants={applicants} createdProjects={createdProjects} onOpenApplicant={openApplicant} project={project} />
             : <D5Dashboard applicants={sorted} filter={filter} onDownload={() => setDownloadOpen(true)} onFilterChange={setFilter} onOpen={openApplicant} onSelectedChange={setSelected} project={project} selected={selected} />}
     {downloadOpen && project && <D8DownloadModal applicants={sorted} onClose={() => setDownloadOpen(false)} project={project} selected={selected} />}
     {confirmingApproval && current && <AdminConfirmDialog

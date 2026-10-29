@@ -6,7 +6,7 @@ import { AdminNotifications } from './AdminNotifications'
 import { SearchIcon } from './adminIcons'
 
 export type AdminMenu = 'home' | 'project' | 'applicants' | 'documents'
-// 홈 = D1; 프로젝트 and 신청자 both open the D5 신청자 목록; 서류 관리 = D10 서류 현황.
+// 홈 = D1, 프로젝트 = D5 (2026 창업동아리 신청자), 신청자 = D11 전체 신청자, 서류 관리 = D10 서류 현황.
 const menus: { label: string; menu: AdminMenu }[] = [{ label: '홈', menu: 'home' }, { label: '프로젝트', menu: 'project' }, { label: '신청자', menu: 'applicants' }, { label: '서류 관리', menu: 'documents' }]
 // Shown when 담당자 데모 is opened without logging in.
 const demoReviewer = { name: '박담당', email: 'admin@example.com' }

@@ -400,6 +400,12 @@
 .d1-dots { align-items: center; background: none; border: 0; border-radius: 6px; color: var(--color-text-secondary); cursor: pointer; display: flex; height: 28px; justify-content: center; width: 28px; }
 .d1-dots:hover { background: var(--color-surface-muted); }
 
+/* D11 전체 신청자 (reuses the D5 toolbar and table) */
+.admin-project-filter { align-items: center; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; color: var(--color-text-secondary); display: inline-flex; gap: 6px; height: 40px; padding: 0 12px; }
+.admin-project-filter select { appearance: none; background: none; border: 0; color: var(--color-text-primary); cursor: pointer; font: inherit; font-size: 13px; font-weight: 600; outline: 0; }
+.admin-project-filter:focus-within { border-color: var(--color-brand); }
+.d11-col-project { width: 280px; }
+
 /* D10 서류 현황 (reuses the D1 card and table) */
 .d10-col-progress { width: 240px; }
 .d10-col-count { width: 120px; }
