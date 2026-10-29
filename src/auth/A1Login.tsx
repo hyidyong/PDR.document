@@ -2,8 +2,10 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { AuthError, login, logout } from '../api/authApi'
 import { BrandLogo, Button, CheckIcon, FileIcon } from '../components/common'
+import { showNotice } from '../store/noticeStore'
 import { setSessionUser } from '../store/sessionStore'
 import { A2RoleSelect } from './A2RoleSelect'
+import { ReadyNotice } from './ReadyNotice'
 import './A1Login.css'
 
 type FieldErrors = { email?: string; password?: string }
@@ -81,6 +83,7 @@ export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPerso
 
   return <main className="a1-screen">
     <header className="a1-header"><BrandLogo /></header>
+    <ReadyNotice />
     <div className="a1-body">
       <section className="a1-brand">
         <div className="a1-copy">
@@ -105,7 +108,7 @@ export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPerso
           </div>
           <div className="a1-options">
             <label className="a1-keep"><input type="checkbox" /><span>로그인 상태 유지</span></label>
-            <button className="a1-text-button" onClick={() => setNotice('비밀번호 찾기는 준비 중이에요')} type="button">비밀번호 찾기</button>
+            <button className="a1-text-button" onClick={() => showNotice('비밀번호 찾기는 준비 중이에요')} type="button">비밀번호 찾기</button>
           </div>
           {notice && <p className="a1-notice" role="alert">{notice}</p>}
           <Button disabled={isSubmitting} size="large" type="submit">{isSubmitting ? '로그인 중...' : '로그인'}</Button>

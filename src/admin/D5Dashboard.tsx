@@ -5,6 +5,7 @@ import { Button, CheckIcon, ChevronDownIcon, ChevronRightIcon, StatusBadge } fro
 import { ChevronLeftIcon, ClockIcon, DownloadIcon, LinkIcon, SearchIcon, SortIcon } from './adminIcons'
 import { adminStatusBadge, adminStatusLabels, adminStatusOrder, formatShort } from './mockAdminData'
 import type { AdminApplicant, AdminStatus } from './mockAdminData'
+import { showNotice } from '../store/noticeStore'
 import { formatDeadlineBadge } from '../utils/projectDeadline'
 
 export type DashboardSort = 'recent' | 'name'
@@ -97,7 +98,7 @@ export function D5Dashboard({ project, applicants, filter, selected, onFilterCha
         <div className="admin-title-row"><h1>{project.name}</h1><span className="admin-deadline"><ClockIcon width={14} height={14} />{formatDeadlineBadge(project.deadlineAt)}</span></div>
       </div>
       <div className="admin-header-actions">
-        <button className="admin-text-button" type="button"><LinkIcon width={16} height={16} />제출 링크 관리</button>
+        <button className="admin-text-button" onClick={() => showNotice('제출 링크 관리는 준비 중이에요')} type="button"><LinkIcon width={16} height={16} />제출 링크 관리</button>
         <Button onClick={onDownload} variant="secondary"><DownloadIcon width={16} height={16} />ZIP 다운로드</Button>
       </div>
     </div>

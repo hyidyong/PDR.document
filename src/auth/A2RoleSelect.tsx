@@ -2,6 +2,8 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { UserRole } from '../api/authApi'
 import { BrandLogo, Button, CheckIcon } from '../components/common'
+import { showNotice } from '../store/noticeStore'
+import { ReadyNotice } from './ReadyNotice'
 import './A1Login.css'
 import './A2RoleSelect.css'
 
@@ -35,7 +37,7 @@ export function A2RoleSelect({ mode = 'signup', onLogin, onChoose }: { mode?: 's
 
   const next = async () => {
     if (!role) return
-    if (isSignup || !onChoose) { setNotice('회원가입은 준비 중이에요. 데모 계정으로 로그인해 주세요'); return }
+    if (isSignup || !onChoose) { showNotice('회원가입은 준비 중이에요. 데모 계정으로 로그인해 주세요'); return }
     setNotice('')
     setIsChoosing(true)
     try { await onChoose(role) }
@@ -47,6 +49,7 @@ export function A2RoleSelect({ mode = 'signup', onLogin, onChoose }: { mode?: 's
       <BrandLogo />
       {isSignup && <div aria-label="회원가입 1 / 2단계" className="a2-steps"><span className="is-done" /><span /><small>1 / 2</small></div>}
     </header>
+    <ReadyNotice />
     <div className="a2-body">
       <div className="a2-column">
         <div className="a2-heading">

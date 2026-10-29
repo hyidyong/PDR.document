@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { ChevronDownIcon } from '../components/common'
+import { showNotice } from '../store/noticeStore'
 import './A3ProfileMenu.css'
 
 function SwitchIcon() {
@@ -15,12 +16,9 @@ function LogoutIcon() {
   return <svg aria-hidden="true" fill="none" viewBox="0 0 24 24"><path d="M14 4.5H6.5v15H14M10 12h10m0 0-3.5-3.5M20 12l-3.5 3.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" /></svg>
 }
 
-const NOT_READY = '데모에서는 준비 중이에요'
-
-// A3 프로필 메뉴. 모드 전환 calls onSwitch when given (back to the A2 역할 선택), otherwise shows a not-ready notice like 설정.
+// A3 프로필 메뉴. 모드 전환 calls onSwitch when given (back to the A2 역할 선택); otherwise it and 설정 show the shared 준비 중 notice.
 export function A3ProfileMenu({ name, email, roleLabel, switchLabel, onLogout, onSwitch }: { name: string; email: string; roleLabel: string; switchLabel: string; onLogout: () => void; onSwitch?: () => void }) {
   const [open, setOpen] = useState(false)
-  const [notice, setNotice] = useState('')
   const ref = useRef<HTMLDivElement>(null)
   const initial = name.slice(0, 1)
 
@@ -33,7 +31,7 @@ export function A3ProfileMenu({ name, email, roleLabel, switchLabel, onLogout, o
     return () => { document.removeEventListener('mousedown', closeOutside); document.removeEventListener('keydown', closeOnEscape) }
   }, [open])
 
-  const toggle = () => { setOpen(!open); setNotice('') }
+  const toggle = () => setOpen(!open)
   const item = (label: string, icon: ReactNode, onClick: () => void, className = '') => <button className={`a3-menu__item ${className}`} onClick={onClick} role="menuitem" type="button">{icon}{label}</button>
 
   return <div className="a3-profile" ref={ref}>
@@ -45,9 +43,8 @@ export function A3ProfileMenu({ name, email, roleLabel, switchLabel, onLogout, o
         <span className="a3-avatar a3-avatar--large">{initial}</span>
         <div><div className="a3-menu__name"><strong>{name}</strong><span>{roleLabel}</span></div><small>{email}</small></div>
       </div>
-      {item(switchLabel, <SwitchIcon />, onSwitch ?? (() => setNotice(NOT_READY)), 'is-strong')}
-      {item('설정', <SettingsIcon />, () => setNotice(NOT_READY))}
-      {notice && <p className="a3-menu__notice" role="status">{notice}</p>}
+      {item(switchLabel, <SwitchIcon />, onSwitch ?? (() => showNotice()), 'is-strong')}
+      {item('설정', <SettingsIcon />, () => showNotice())}
       <hr />
       {item('로그아웃', <LogoutIcon />, onLogout, 'is-muted')}
     </div>}
