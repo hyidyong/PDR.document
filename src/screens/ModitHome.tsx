@@ -26,7 +26,7 @@ function submissionStatus(overview: FlowOverview) {
   return { label: '최종 제출 전', badge: 'not-submitted' as const }
 }
 
-export function ModitHome({ deadlineAt, overview, onNavigate, onLogout }: { deadlineAt?: string | null; overview: FlowOverview; onNavigate: (page: MainPage) => void; onLogout: () => void }) {
+export function ModitHome({ deadlineAt, overview, onNavigate, onPersonalCheck, onLogout }: { deadlineAt?: string | null; overview: FlowOverview; onNavigate: (page: MainPage) => void; onPersonalCheck: () => void; onLogout: () => void }) {
   const uploadedCount = documentIds.filter((id) => overview.documents[id]).length
   const passedCount = documentIds.filter((id) => overview.documents[id]?.status === 'pass').length
   const status = submissionStatus(overview)
@@ -39,7 +39,7 @@ export function ModitHome({ deadlineAt, overview, onNavigate, onLogout }: { dead
         <span className="modit-home__eyebrow">MODIT · 서류 제출 도우미</span>
         <h1>서류 준비부터 제출 현황까지<br />한곳에서 확인하세요</h1>
         <p>필수 서류를 올리고 AI 점검 결과를 살펴본 뒤 최종 제출할 수 있어요. 담당자 검토 진행 상황은 내 제출함에서 확인하세요.</p>
-        <div className="modit-home__actions"><Button onClick={() => onNavigate('check')} size="large">서류 점검하기</Button><Button onClick={() => onNavigate('inbox')} size="large" variant="secondary">내 제출함 확인하기</Button></div>
+        <div className="modit-home__actions"><Button onClick={() => onNavigate('check')} size="large">서류 점검하기</Button><Button onClick={onPersonalCheck} size="large" variant="secondary">AI 체크리스트 생성</Button><Button onClick={() => onNavigate('inbox')} size="large" variant="secondary">내 제출함 확인하기</Button></div>
       </section>
 
       <section aria-labelledby="home-project-title" className="modit-home__project">

@@ -54,11 +54,10 @@ const hasDemoApplicant = Boolean(demoApplicant.email && demoApplicant.password)
 
 // onAuthenticated leads to the A2 역할 선택 (App); onAdminDemo opens the 담당자 screens on mock data without logging in.
 // onApplicantDemo skips A2 and opens the 신청자 서류 점검 (App runs chooseApplicant); it throws if that fails.
-export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPersonalCheck }: {
+export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo }: {
   onAuthenticated: (deadlineAt?: string | null) => void
   onApplicantDemo: (deadlineAt?: string | null) => Promise<void>
   onAdminDemo: () => void
-  onPersonalCheck: () => void
 }) {
   const [view, setView] = useState<'login' | 'signup'>('login')
   const [email, setEmail] = useState('')
@@ -168,7 +167,7 @@ export function A1Login({ onAuthenticated, onApplicantDemo, onAdminDemo, onPerso
                 <ArrowRightIcon />
               </button>
             </div>
-            <button className="a1-solo-link" onClick={onPersonalCheck} type="button">기관 링크 없이 혼자 점검하기 <ArrowRightIcon /></button>
+            <button className="a1-solo-link" onClick={() => showNotice('AI 체크리스트는 로그인 후 사용자 화면에서 이용할 수 있어요.')} type="button">기관 링크 없이 혼자 점검하기 (로그인 필요) <ArrowRightIcon /></button>
           </div>
         </form>
         <p className="a1-link-notice"><LinkIcon />기관에서 받은 제출 링크가 있다면 로그인 없이 바로 들어갈 수 있어요.</p>
