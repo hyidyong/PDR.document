@@ -23,7 +23,7 @@ export type ProjectDraft = {
   created: CreatedProject | null
 }
 
-export const LINK_HOST = 'modit.kr/p/'
+export const LINK_HOST = `${globalThis.location?.host ?? 'modit-ten.vercel.app'}/p/`
 export const GUIDE_MAX = 5000
 export const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
 const SLUG_MAX = 40

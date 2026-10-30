@@ -123,6 +123,7 @@ export function ProjectWizard({ step, draft, onDraftChange, onNext, onBack, onCr
       {step === 2 && <D2Roster draft={draft} onChange={onDraftChange} />}
       {step === 3 && <D3Documents draft={draft} onChange={onDraftChange} />}
       {step === 4 && draft.created && <D4LinkShare onDone={onDone} project={draft.created} />}
+      {step === 4 && !draft.created && <section className="wz-card" role="alert"><h1>링크 정보를 복원하지 못했어요</h1><p>저장된 프로젝트가 없거나 브라우저 저장소가 초기화되었습니다.</p><Button onClick={onDone}>프로젝트 목록으로 돌아가기</Button></section>}
     </div>
 
     {step === 1 && <Footer hint="모든 칸은 나중에 바꿀 수 있어요" next={nextButton('다음: 신청자 명단', nextFromBasic)} onPrev={() => onBack(0)} prevLabel="취소" />}
