@@ -2,6 +2,7 @@ package com.modit.backend.service;
 
 import com.modit.backend.api.ChecklistDtos.ChecklistRequest;
 import com.modit.backend.api.ChecklistDtos.ChecklistResponse;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,11 +13,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /** Schema-neutral bridge until the generate-document-checklist contract is finalized. */
 @Service
 public class DocumentChecklistEdgeService {
     private static final Logger log = LoggerFactory.getLogger(DocumentChecklistEdgeService.class);
+    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final Set<String> SAFE_EDGE_ERRORS = Set.of("OPENAI_INSUFFICIENT_QUOTA", "OPENAI_RATE_LIMIT",
+            "OPENAI_AUTH_FAILED", "OPENAI_ACCESS_DENIED", "OPENAI_API_FAILED", "OPENAI_API_KEY_NOT_CONFIGURED");
     private final RestClient client;
     private final String functionName;
 
@@ -41,9 +47,10 @@ public class DocumentChecklistEdgeService {
         } catch (RestClientResponseException e) {
             String gatewayCode = SupabaseEdgeAiAnalysisService.diagnosticCode(
                     e.getResponseHeaders() == null ? null : e.getResponseHeaders().getFirst("sb-error-code"));
-            log.warn("Checklist Edge request rejected: status={}, sb_error_code={}, function={}",
-                    e.getStatusCode().value(), gatewayCode, functionName);
-            throw new ResponseStatusException(e.getStatusCode(), "체크리스트 생성 요청이 거부되었습니다.");
+            String edgeCode = safeEdgeErrorCode(e.getResponseBodyAsString());
+            log.warn("Checklist Edge request rejected: status={}, edge_error_code={}, sb_error_code={}, function={}",
+                    e.getStatusCode().value(), edgeCode, gatewayCode, functionName);
+            throw new ResponseStatusException(e.getStatusCode(), rejectionMessage(e.getStatusCode(), edgeCode));
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
@@ -68,6 +75,32 @@ public class DocumentChecklistEdgeService {
     }
 
     private boolean blank(String value) { return value == null || value.isBlank(); }
+
+    static String safeEdgeErrorCode(String body) {
+        if (body == null || body.length() > 2048) return "UNKNOWN";
+        try {
+            JsonNode json = mapper.readTree(body);
+            String code = json.path("error").asText();
+            return SAFE_EDGE_ERRORS.contains(code) ? code : "UNKNOWN";
+        } catch (Exception ignored) {
+            return "UNKNOWN";
+        }
+    }
+
+    static String rejectionMessage(HttpStatusCode status, String edgeCode) {
+        return switch (edgeCode) {
+            case "OPENAI_INSUFFICIENT_QUOTA" -> "OpenAI API 할당량이 부족합니다. 관리자에게 서비스 설정 확인을 요청해 주세요.";
+            case "OPENAI_RATE_LIMIT" -> "OpenAI API 요청 속도 제한에 도달했습니다. 잠시 후 다시 시도해 주세요.";
+            case "OPENAI_AUTH_FAILED", "OPENAI_ACCESS_DENIED", "OPENAI_API_KEY_NOT_CONFIGURED" ->
+                    "체크리스트 AI 서비스 인증 설정에 문제가 있습니다. 관리자에게 확인을 요청해 주세요.";
+            default -> switch (status.value()) {
+                case 401 -> "체크리스트 생성 서비스 인증에 실패했습니다. 다시 로그인한 뒤 시도해 주세요.";
+                case 403 -> "체크리스트 생성 서비스에 접근할 권한이 없습니다.";
+                case 429 -> "체크리스트 AI 요청 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.";
+                default -> "체크리스트 생성 요청이 거부되었습니다.";
+            };
+        };
+    }
 
     private JwtAuthenticationToken authentication() {
         if (SecurityContextHolder.getContext().getAuthentication() instanceof JwtAuthenticationToken token) return token;

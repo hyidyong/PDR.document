@@ -47,8 +47,24 @@ class DocumentChecklistEdgeServiceTest {
             assertEquals("https://example.com", result.items().getFirst().sourceUrl());
             assertTrue(result.webSearchUsed());
             status.set(429);
+            body.set("{\"error\":\"OPENAI_INSUFFICIENT_QUOTA\",\"upstreamStatus\":429}");
+            var quota = assertThrows(ResponseStatusException.class, () -> bridge.generate(payload));
+            assertEquals(429, quota.getStatusCode().value());
+            assertTrue(quota.getReason().contains("할당량"));
+            body.set("{\"error\":\"OPENAI_RATE_LIMIT\",\"upstreamStatus\":429}");
+            assertTrue(assertThrows(ResponseStatusException.class, () -> bridge.generate(payload))
+                    .getReason().contains("속도 제한"));
+            status.set(502);
+            body.set("{\"error\":\"OPENAI_AUTH_FAILED\",\"upstreamStatus\":401}");
+            assertTrue(assertThrows(ResponseStatusException.class, () -> bridge.generate(payload))
+                    .getReason().contains("AI 서비스 인증 설정"));
+            status.set(401);
             body.set("{}");
-            assertEquals(429, assertThrows(ResponseStatusException.class, () -> bridge.generate(payload)).getStatusCode().value());
+            assertTrue(assertThrows(ResponseStatusException.class, () -> bridge.generate(payload))
+                    .getReason().contains("다시 로그인"));
+            status.set(403);
+            assertTrue(assertThrows(ResponseStatusException.class, () -> bridge.generate(payload))
+                    .getReason().contains("접근할 권한"));
             status.set(200);
             body.set("");
             assertEquals(502, assertThrows(ResponseStatusException.class, () -> bridge.generate(payload)).getStatusCode().value());
@@ -78,5 +94,13 @@ class DocumentChecklistEdgeServiceTest {
     @Test void rejectsInstructionsOverContractLimitBeforeNetworkAccess() {
         var payload = new ChecklistRequest(null, null, null, null, "가".repeat(12_001), null);
         assertThrows(IllegalArgumentException.class, () -> service.generate(payload));
+    }
+
+    @Test void onlyAllowsKnownEdgeErrorCodes() {
+        assertEquals("OPENAI_INSUFFICIENT_QUOTA", DocumentChecklistEdgeService.safeEdgeErrorCode(
+                "{\"error\":\"OPENAI_INSUFFICIENT_QUOTA\"}"));
+        assertEquals("UNKNOWN", DocumentChecklistEdgeService.safeEdgeErrorCode(
+                "{\"error\":\"Authorization: Bearer secret\"}"));
+        assertEquals("UNKNOWN", DocumentChecklistEdgeService.safeEdgeErrorCode("not-json"));
     }
 }
