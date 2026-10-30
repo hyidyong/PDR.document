@@ -130,6 +130,9 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
   const openRow = (applicantId: string) => (openView?.id === mainId ? openApplicant(applicantId) : showNotice(`${openView?.name ?? '이 프로젝트'}의 신청자 상세는 준비 중이에요`))
 
   const currentDocuments = current && documents?.applicantId === current.applicantId ? documents.data : null
+  const wizardDraft = wizardStep === 4 && !draft.created && createdProjects.length
+    ? { ...draft, created: createdProjects.at(-1)! }
+    : draft
   const detail = () => {
     if (!project || !current || !currentDocuments) return null
     const shared = { applicant: current, documents: currentDocuments, events: eventsById[current.applicantId] ?? [], onBack: goHome, onMove: move, position: index + 1, project, total: sorted.length }
@@ -146,7 +149,7 @@ function AdminScreens({ deadlineAt, onExit }: { deadlineAt?: string | null; onEx
     {loading || !project
       ? null
       : wizardStep
-        ? <ProjectWizard draft={draft} onBack={wizardBack} onCreate={createFromDraft} onDone={finishWizard} onDraftChange={setDraft} onNext={wizardTo} step={wizardStep} />
+        ? <ProjectWizard draft={wizardDraft} onBack={wizardBack} onCreate={createFromDraft} onDone={finishWizard} onDraftChange={setDraft} onNext={wizardTo} step={wizardStep} />
       : current
         ? detail()
         : menu === 'home'

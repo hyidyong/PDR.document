@@ -48,5 +48,7 @@
 body { min-width: 320px; min-height: 100vh; margin: 0; }
 button, input, textarea { font: inherit; }
 button { cursor: pointer; }
+.fatal-error { margin: 20vh auto; max-width: 520px; padding: 32px; text-align: center; }
+.fatal-error button { background: var(--color-brand); border: 0; border-radius: 8px; color: white; margin-top: 16px; padding: 12px 20px; }
 button:disabled { cursor: not-allowed; }
 #root { min-height: 100vh; }

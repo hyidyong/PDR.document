@@ -122,8 +122,8 @@ public class SubmissionService {
         CaseFile c = caseFile(projectId, applicantId);
         synchronized (c) {
             if (c.status != SubmissionStatus.DRAFT) throw new IllegalStateException("최초 제출은 초안 상태에서만 가능합니다.");
-            if (c.documents.isEmpty()) throw new IllegalStateException("업로드한 서류가 없습니다.");
-            c.status = allPass(c) ? SubmissionStatus.SUBMITTED : SubmissionStatus.SUBMITTED_INCOMPLETE;
+            if (!allPass(c)) throw new IllegalStateException("필수 서류를 모두 업로드하고 AI 검수의 오류·확인 필요 항목을 해결한 뒤 제출해 주세요.");
+            c.status = SubmissionStatus.SUBMITTED;
             SubmissionEvent event = new SubmissionEvent(UUID.randomUUID().toString(), 1, c.status, snapshot(c), Instant.now());
             c.submissions.add(event); c.log("SUBMIT", c.status.name()); return event;
         }

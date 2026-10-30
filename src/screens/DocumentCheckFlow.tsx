@@ -193,6 +193,12 @@ export function DocumentCheckFlow({ applicantId, deadlineAt, page, onNavigate, o
 
   const requestedDocumentsReady = requestedIds.length > 0 && requestedIds.every((id) => documents[id] && documents[id].version > (originalDocuments[id]?.version ?? 0) && documents[id].status === 'pass')
   const allDocumentsPassed = remaining.length === 3 && remaining.every((document) => document.status === 'pass')
+  const missingDocuments = (['plan', 'contract', 'receipts'] as DocumentId[]).filter((id) => !documents[id]).map((id) => documentLabels[id])
+  const submissionGuidance = missingDocuments.length
+    ? `필수 서류가 누락됐어요: ${missingDocuments.join(', ')}`
+    : errorCount || reviewCount
+      ? `오류 ${errorCount}건, 확인 필요 ${reviewCount}건을 해결해야 제출할 수 있어요.`
+      : allDocumentsPassed ? '필수 서류 3개가 모두 통과했어요. 제출할 수 있어요.' : '파일을 올리면 AI 검사가 자동으로 시작돼요'
 
   if (page === 'inbox') {
     if (submissionStatus === 'draft' || !submittedAt) return <B5EmptyInbox onNavigate={onNavigate} onLogout={onLogout} />
@@ -206,7 +212,7 @@ export function DocumentCheckFlow({ applicantId, deadlineAt, page, onNavigate, o
       {isResubmitting && <div className="check-resubmission-note"><strong>보완 요청 서류를 수정하고 있어요</strong><span>교체 대상: {requestedIds.map((id) => documentLabels[id]).join(', ')} · 이전 제출 파일과 검사 결과는 기록으로 보관돼요.</span></div>}
       {activeId === 'receipts' ? <B3DocumentCheck {...screenProps} /> : <B2DocumentCheck {...screenProps} />}
     </main>
-    <div className="check-actionbar"><div className="check-actionbar__inner"><span className="check-action-note">{submissionStatus !== 'draft' && !isResubmitting ? '제출한 서류는 내 제출함에서 확인할 수 있어요.' : isResubmitting ? allDocumentsPassed ? '모든 항목을 확인했어요. 담당자에게 다시 제출할 수 있어요.' : checkingId ? 'AI 검사 중이에요.' : '보완 요청 서류를 교체하고 AI 검사를 확인해 주세요.' : errorCount || reviewCount ? `오류 ${errorCount}건, 확인 필요 ${reviewCount}건이 남아 있어요` : '파일을 올리면 AI 검사가 자동으로 시작돼요'}</span><div className="check-action-buttons"><Button disabled={(submissionStatus !== 'draft' && !isResubmitting) || (isResubmitting && !requestedIds.includes(activeId))} variant="secondary" onClick={() => openFilePicker()}><UploadIcon width={16} height={16} /> {isResubmitting || activeId === 'contract' ? '수정본 올리기' : '수정본 다시 올리기'}</Button><Button disabled={(submissionStatus !== 'draft' && !isResubmitting) || checkingId !== null || (isResubmitting && (!requestedDocumentsReady || !allDocumentsPassed))} onClick={() => isResubmitting ? setShowResubmitConfirm(true) : setShowSubmitConfirm(true)}>{isResubmitting ? '재제출하기' : '제출하기'}</Button></div></div></div>
+    <div className="check-actionbar"><div className="check-actionbar__inner"><span className="check-action-note">{submissionStatus !== 'draft' && !isResubmitting ? '제출한 서류는 내 제출함에서 확인할 수 있어요.' : isResubmitting ? allDocumentsPassed ? '모든 항목을 확인했어요. 담당자에게 다시 제출할 수 있어요.' : checkingId ? 'AI 검사 중이에요.' : '보완 요청 서류를 교체하고 AI 검사를 확인해 주세요.' : submissionGuidance}</span><div className="check-action-buttons"><Button disabled={(submissionStatus !== 'draft' && !isResubmitting) || (isResubmitting && !requestedIds.includes(activeId))} variant="secondary" onClick={() => openFilePicker()}><UploadIcon width={16} height={16} /> {isResubmitting || activeId === 'contract' ? '수정본 올리기' : '수정본 다시 올리기'}</Button><Button disabled={(submissionStatus !== 'draft' && !isResubmitting) || checkingId !== null || (!isResubmitting && !allDocumentsPassed) || (isResubmitting && (!requestedDocumentsReady || !allDocumentsPassed))} onClick={() => isResubmitting ? setShowResubmitConfirm(true) : setShowSubmitConfirm(true)}>{isResubmitting ? '재제출하기' : '제출하기'}</Button></div></div></div>
     <input aria-label={`${documentLabels[activeId]} 파일 선택`} accept=".pdf,application/pdf" className="check-hidden-input" onChange={handleFileInput} ref={fileInputRef} type="file" />
     {fileError && <div className="check-file-error" role="alert">{fileError}</div>}
     {analysisNotice && <div className="check-file-error" role="status">{analysisNotice}</div>}

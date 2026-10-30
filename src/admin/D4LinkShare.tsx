@@ -17,7 +17,7 @@ function LinkQr({ url }: { url: string }) {
 export function D4LinkShare({ project, onDone }: { project: CreatedProject; onDone: () => void }) {
   const [copied, setCopied] = useState(false)
   const shown = `${LINK_HOST}${project.slug}`
-  const url = `https://${shown}`
+  const url = `${window.location.origin}/p/${project.slug}`
 
   useEffect(() => {
     if (!copied) return
